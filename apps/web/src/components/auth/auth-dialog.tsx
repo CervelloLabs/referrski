@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Dialog,
   DialogContent,
@@ -22,9 +23,16 @@ interface AuthDialogProps {
 
 export function AuthDialog({ trigger, defaultMode = 'sign-in' }: AuthDialogProps) {
   const [mode, setMode] = useState<'sign-in' | 'sign-up'>(defaultMode);
+  const [open, setOpen] = useState(false);
+  const router = useRouter();
+
+  const handleSuccess = () => {
+    setOpen(false);
+    router.push('/dashboard');
+  };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || <Button variant="default">Sign In</Button>}
       </DialogTrigger>
@@ -40,9 +48,9 @@ export function AuthDialog({ trigger, defaultMode = 'sign-in' }: AuthDialogProps
           </DialogDescription>
         </DialogHeader>
         {mode === 'sign-in' ? (
-          <SignInForm onToggleMode={() => setMode('sign-up')} />
+          <SignInForm onToggleMode={() => setMode('sign-up')} onSuccess={handleSuccess} />
         ) : (
-          <SignUpForm onToggleMode={() => setMode('sign-in')} />
+          <SignUpForm onToggleMode={() => setMode('sign-in')} onSuccess={handleSuccess} />
         )}
       </DialogContent>
     </Dialog>
