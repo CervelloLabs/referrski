@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { CreateAppDialog } from '@/components/app/create-app-dialog';
+import { AppCard } from '@/components/app/app-card';
 import { fetchApi } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 
@@ -50,6 +51,12 @@ export default function DashboardPage() {
 
   const handleAppCreated = (newApp: App) => {
     setApps(prevApps => [...prevApps, newApp]);
+  };
+
+  const handleAppUpdated = (updatedApp: App) => {
+    setApps(prevApps =>
+      prevApps.map(app => (app.id === updatedApp.id ? updatedApp : app))
+    );
   };
 
   return (
@@ -97,24 +104,11 @@ export default function DashboardPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {apps.map((app) => (
-            <Card key={app.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <CardTitle>{app.name}</CardTitle>
-                <CardDescription>
-                  Created {new Date(app.createdAt).toLocaleDateString()}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground truncate">
-                    {app.webhookUrl ? `Webhook: ${app.webhookUrl}` : 'No webhook configured'}
-                  </p>
-                  <Button variant="outline" className="w-full">
-                    View Details
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <AppCard
+              key={app.id}
+              app={app}
+              onUpdate={handleAppUpdated}
+            />
           ))}
         </div>
       )}

@@ -1,14 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { supabaseAdmin } from '@/lib/supabase';
 import { verifyAuth } from '@/middleware/auth';
 import { appSchema } from '@/schemas/app';
 import type { AppResponse } from '@/types/app';
 import { ZodError } from 'zod';
-
-const db = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 // Update an app
 export async function PUT(
@@ -26,7 +21,7 @@ export async function PUT(
 
   try {
     // First, verify the app belongs to the user
-    const { data: existingApp, error: fetchError } = await db
+    const { data: existingApp, error: fetchError } = await supabaseAdmin
       .from('apps')
       .select('*')
       .eq('id', params.id)
@@ -43,19 +38,19 @@ export async function PUT(
     const body = await request.json();
     const validatedData = appSchema.parse(body);
 
-    const { data: app, error } = await db
+    const { data: app, error } = await supabaseAdmin
       .from('apps')
       .update({
         name: validatedData.name,
         webhook_url: validatedData.webhookUrl,
         auth_header: validatedData.authHeader,
-        updated_at: new Date().toISOString(),
       })
       .eq('id', params.id)
       .select()
       .single();
 
     if (error) {
+      console.error('Database error:', error);
       throw error;
     }
 
@@ -80,7 +75,7 @@ export async function PUT(
     console.error('Error updating app:', error);
 
     if (error instanceof ZodError) {
-      return NextResponse.json<AppResponse>(
+      return NextResponse.json(
         {
           success: false,
           message: 'Validation error',
@@ -94,7 +89,11 @@ export async function PUT(
     }
 
     return NextResponse.json(
-      { success: false, message: 'Failed to update app' },
+      { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to update app',
+        details: error instanceof Error ? error.stack : String(error)
+      },
       { status: 500 }
     );
   }
@@ -116,7 +115,7 @@ export async function DELETE(
 
   try {
     // First, verify the app belongs to the user
-    const { data: existingApp, error: fetchError } = await db
+    const { data: existingApp, error: fetchError } = await supabaseAdmin
       .from('apps')
       .select('*')
       .eq('id', params.id)
@@ -130,7 +129,7 @@ export async function DELETE(
       );
     }
 
-    const { error } = await db
+    const { error } = await supabaseAdmin
       .from('apps')
       .delete()
       .eq('id', params.id);
