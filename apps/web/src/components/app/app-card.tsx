@@ -69,46 +69,42 @@ export function AppCard({ app, onUpdate }: AppCardProps) {
     <>
       <Card className="hover:shadow-lg transition-shadow">
         <CardHeader>
-          <div className="flex justify-between items-start">
-            <div>
-              <CardTitle>{app.name}</CardTitle>
-              <CardDescription>
-                Created {new Date(app.createdAt).toLocaleDateString()}
-              </CardDescription>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => router.push(`/dashboard/docs?appId=${app.id}`)}
-                title="View Documentation"
-              >
-                <Code className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsDetailsOpen(true)}
-                title="View Details"
-              >
-                <Info className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsSettingsOpen(true)}
-                title="Settings"
-              >
-                <Settings className="h-4 w-4" />
-              </Button>
-            </div>
+          <div>
+            <CardTitle>{app.name}</CardTitle>
+            <CardDescription>
+              Created {new Date(app.createdAt).toLocaleDateString()}
+            </CardDescription>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground truncate">
-              {app.webhookUrl ? `Webhook: ${app.webhookUrl}` : 'No webhook configured'}
-            </p>
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => router.push(`/dashboard/docs?appId=${app.id}`)}
+              title="View Documentation"
+              className="h-8 w-8"
+            >
+              <Code className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsDetailsOpen(true)}
+              title="View Details"
+              className="h-8 w-8"
+            >
+              <Info className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsSettingsOpen(true)}
+              title="Settings"
+              className="h-8 w-8"
+            >
+              <Settings className="h-4 w-4" />
+            </Button>
           </div>
         </CardContent>
       </Card>
