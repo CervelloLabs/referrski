@@ -1,11 +1,12 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { verifyAuth } from '@/middleware/auth';
 
 export async function GET(
-  request: Request,
-  context: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const authResult = await verifyAuth(request);
   if ('error' in authResult) {
     return NextResponse.json(authResult.error, { status: authResult.error.status });
@@ -16,14 +17,14 @@ export async function GET(
     const { count: uniqueInvites } = await supabaseAdmin
       .from('invitations')
       .select('invitee_identifier', { count: 'exact', head: true })
-      .eq('app_id', context.params.id)
+      .eq('app_id', id)
       .is('deleted_at', null);
 
     // Get completed invites count (signed up users)
     const { count: completedInvites } = await supabaseAdmin
       .from('invitations')
       .select('invitee_identifier', { count: 'exact', head: true })
-      .eq('app_id', context.params.id)
+      .eq('app_id', id)
       .eq('status', 'completed')
       .is('deleted_at', null);
 

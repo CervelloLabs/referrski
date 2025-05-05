@@ -1,3 +1,4 @@
+import { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { verifyAuth } from '@/middleware/auth';
@@ -7,9 +8,10 @@ import { ZodError } from 'zod';
 
 // Update an app
 export async function PUT(
-  request: Request,
-  context: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const authResult = await verifyAuth(request);
 
   if ('error' in authResult) {
@@ -24,7 +26,7 @@ export async function PUT(
     const { data: existingApp, error: fetchError } = await supabaseAdmin
       .from('apps')
       .select('*')
-      .eq('id', context.params.id)
+      .eq('id', id)
       .eq('user_id', authResult.user.id)
       .single();
 
@@ -45,7 +47,7 @@ export async function PUT(
         webhook_url: validatedData.webhookUrl,
         auth_header: validatedData.authHeader,
       })
-      .eq('id', context.params.id)
+      .eq('id', id)
       .select()
       .single();
 
@@ -101,9 +103,10 @@ export async function PUT(
 
 // Delete an app
 export async function DELETE(
-  request: Request,
-  context: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const authResult = await verifyAuth(request);
 
   if ('error' in authResult) {
@@ -118,7 +121,7 @@ export async function DELETE(
     const { data: existingApp, error: fetchError } = await supabaseAdmin
       .from('apps')
       .select('*')
-      .eq('id', context.params.id)
+      .eq('id', id)
       .eq('user_id', authResult.user.id)
       .single();
 
@@ -132,7 +135,7 @@ export async function DELETE(
     const { error } = await supabaseAdmin
       .from('apps')
       .delete()
-      .eq('id', context.params.id);
+      .eq('id', id);
 
     if (error) {
       throw error;

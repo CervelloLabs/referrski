@@ -1,3 +1,4 @@
+import { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { verifyAuth } from '@/middleware/auth';
@@ -6,9 +7,10 @@ import type { InvitationResponse } from '@/types/invitation';
 import { ZodError } from 'zod';
 
 export async function POST(
-  request: Request,
-  context: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const authResult = await verifyAuth(request);
 
   if ('error' in authResult) {
@@ -23,7 +25,7 @@ export async function POST(
     const { data: app, error: appError } = await supabaseAdmin
       .from('apps')
       .select('*')
-      .eq('id', context.params.id)
+      .eq('id', id)
       .eq('user_id', authResult.user.id)
       .single();
 
@@ -41,7 +43,7 @@ export async function POST(
     let invitationQuery = supabaseAdmin
       .from('invitations')
       .select('*')
-      .eq('app_id', context.params.id)
+      .eq('app_id', id)
       .eq('invitee_identifier', validatedData.inviteeIdentifier)
       .eq('status', 'pending');
 

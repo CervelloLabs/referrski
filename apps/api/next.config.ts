@@ -1,7 +1,6 @@
 import { NextConfig } from 'next';
 
 const config: NextConfig = {
-  port: 3001,
   // Enable CORS for the web app
   async headers() {
     return [
