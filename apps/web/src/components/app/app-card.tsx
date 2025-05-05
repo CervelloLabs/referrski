@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Settings, Info } from 'lucide-react';
+import { Settings, Info, Code } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import { fetchApi } from '@/lib/api';
+import { useRouter } from 'next/navigation';
 
 interface App {
   id: string;
@@ -29,6 +30,7 @@ export function AppCard({ app, onUpdate }: AppCardProps) {
   const [webhookUrl, setWebhookUrl] = useState(app.webhookUrl || '');
   const [authHeader, setAuthHeader] = useState(app.authHeader || '');
   const { toast } = useToast();
+  const router = useRouter();
 
   const handleSettingsSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,6 +77,14 @@ export function AppCard({ app, onUpdate }: AppCardProps) {
               </CardDescription>
             </div>
             <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => router.push(`/dashboard/docs?appId=${app.id}`)}
+                title="View Documentation"
+              >
+                <Code className="h-4 w-4" />
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"
