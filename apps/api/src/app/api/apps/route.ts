@@ -1,15 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { verifyAuth } from '@/middleware/auth';
 import { appSchema } from '@/schemas/app';
 import type { AppResponse, AppsResponse } from '@/types/app';
 import { ZodError } from 'zod';
-
-// Create a database client using the connection URL
-const db = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 // List all apps for the authenticated user
 export async function GET(request: Request) {
@@ -23,13 +17,14 @@ export async function GET(request: Request) {
   }
 
   try {
-    const { data: apps, error } = await db
+    const { data: apps, error } = await supabaseAdmin
       .from('apps')
       .select('*')
       .eq('user_id', authResult.user.id)
       .order('created_at', { ascending: false });
 
     if (error) {
+      console.error('Database error:', error);
       throw error;
     }
 
@@ -53,7 +48,11 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Error fetching apps:', error);
     return NextResponse.json(
-      { success: false, message: 'Failed to fetch apps' },
+      { 
+        success: false, 
+        message: 'Failed to fetch apps',
+        details: error instanceof Error ? error.message : String(error)
+      },
       { status: 500 }
     );
   }
@@ -64,6 +63,7 @@ export async function POST(request: Request) {
   const authResult = await verifyAuth(request);
 
   if ('error' in authResult) {
+    console.error('Auth error:', authResult.error);
     return NextResponse.json(
       { success: false, message: authResult.error.message },
       { status: authResult.error.status }
@@ -72,20 +72,32 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
+    console.log('Received body:', body);
+    
     const validatedData = appSchema.parse(body);
+    console.log('Validated data:', validatedData);
 
-    const { data: app, error } = await db.from('apps').insert([
-      {
+    const { data: app, error } = await supabaseAdmin
+      .from('apps')
+      .insert({
         name: validatedData.name,
         webhook_url: validatedData.webhookUrl,
         auth_header: validatedData.authHeader,
         user_id: authResult.user.id,
-      },
-    ]).select().single();
+      })
+      .select()
+      .single();
 
     if (error) {
-      throw error;
+      console.error('Database error:', error);
+      throw new Error(`Database error: ${error.message}`);
     }
+
+    if (!app) {
+      throw new Error('Failed to create app: No data returned');
+    }
+
+    console.log('Created app:', app);
 
     return NextResponse.json<AppResponse>(
       {
@@ -108,7 +120,7 @@ export async function POST(request: Request) {
     console.error('Error creating app:', error);
 
     if (error instanceof ZodError) {
-      return NextResponse.json<AppResponse>(
+      return NextResponse.json(
         {
           success: false,
           message: 'Validation error',
@@ -122,7 +134,11 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(
-      { success: false, message: 'Failed to create app' },
+      { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to create app',
+        details: error instanceof Error ? error.stack : String(error)
+      },
       { status: 500 }
     );
   }

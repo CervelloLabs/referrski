@@ -5,12 +5,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { CreateAppDialog } from '@/components/app/create-app-dialog';
+import { fetchApi } from '@/lib/api';
+import { useRouter } from 'next/navigation';
 
 interface App {
   id: string;
   name: string;
-  webhookUrl: string;
-  authHeader: string;
+  webhookUrl: string | null;
+  authHeader: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -19,43 +22,41 @@ export default function DashboardPage() {
   const [apps, setApps] = useState<App[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const router = useRouter();
+
+  const fetchApps = async () => {
+    try {
+      const response = await fetchApi('/api/apps');
+      setApps(response.data.apps);
+    } catch (error) {
+      console.error('Error fetching apps:', error);
+      if (error instanceof Error && error.message === 'Not authenticated') {
+        router.push('/');
+        return;
+      }
+      toast({
+        title: 'Error',
+        description: 'Failed to load your apps. Please try again later.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchApps = async () => {
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/apps`, {
-          credentials: 'include',
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch apps');
-        }
-
-        const data = await response.json();
-        setApps(data.data.apps);
-      } catch (error) {
-        console.error('Error fetching apps:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to load your apps. Please try again later.',
-          variant: 'destructive',
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchApps();
-  }, [toast]);
+  }, []);
+
+  const handleAppCreated = (newApp: App) => {
+    setApps(prevApps => [...prevApps, newApp]);
+  };
 
   return (
     <div className="container py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Your Apps</h1>
-        <Button>
-          <Plus className="w-4 h-4 mr-2" />
-          Create New App
-        </Button>
+        <CreateAppDialog onSuccess={handleAppCreated} />
       </div>
 
       {isLoading ? (
@@ -82,10 +83,15 @@ export default function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button variant="outline" className="mt-4">
-              <Plus className="w-4 h-4 mr-2" />
-              Create Your First App
-            </Button>
+            <CreateAppDialog
+              trigger={
+                <Button variant="outline" className="mt-4">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Your First App
+                </Button>
+              }
+              onSuccess={handleAppCreated}
+            />
           </CardContent>
         </Card>
       ) : (
@@ -101,7 +107,7 @@ export default function DashboardPage() {
               <CardContent>
                 <div className="space-y-2">
                   <p className="text-sm text-muted-foreground truncate">
-                    Webhook: {app.webhookUrl}
+                    {app.webhookUrl ? `Webhook: ${app.webhookUrl}` : 'No webhook configured'}
                   </p>
                   <Button variant="outline" className="w-full">
                     View Details
