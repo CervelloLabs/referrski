@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
-import { fetchApi } from '@/lib/api';
+import { supabase } from '@/lib/supabase';
 
 export default function DashboardLayout({
   children,
@@ -14,9 +14,7 @@ export default function DashboardLayout({
 
   const handleLogout = async () => {
     try {
-      await fetchApi('/api/auth/logout', {
-        method: 'POST',
-      });
+      await supabase.auth.signOut();
       router.push('/');
     } catch (error) {
       console.error('Error logging out:', error);
