@@ -2,11 +2,14 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 export default function DocsPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [defaultTab, setDefaultTab] = useState('installation');
   const appId = searchParams.get('appId');
   
@@ -17,8 +20,18 @@ export default function DocsPage() {
   }, [appId]);
 
   return (
-    <div className="container py-8">
-      <h1 className="text-3xl font-bold mb-8">SDK Documentation</h1>
+    <div className="container px-4 py-8">
+      <div className="flex items-center gap-4 mb-8">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => router.back()}
+          className="h-8 w-8"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        <h1 className="text-3xl font-bold">SDK Documentation</h1>
+      </div>
       
       <Tabs defaultValue={defaultTab} className="space-y-4">
         <TabsList>
