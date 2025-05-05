@@ -7,7 +7,7 @@ import { ZodError } from 'zod';
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   const authResult = await verifyAuth(request);
 
@@ -23,7 +23,7 @@ export async function POST(
     const { data: app, error: appError } = await supabaseAdmin
       .from('apps')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', context.params.id)
       .eq('user_id', authResult.user.id)
       .single();
 
@@ -41,7 +41,7 @@ export async function POST(
     let invitationQuery = supabaseAdmin
       .from('invitations')
       .select('*')
-      .eq('app_id', params.id)
+      .eq('app_id', context.params.id)
       .eq('invitee_identifier', validatedData.inviteeIdentifier)
       .eq('status', 'pending');
 

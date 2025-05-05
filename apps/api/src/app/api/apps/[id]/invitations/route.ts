@@ -8,7 +8,7 @@ import { ZodError } from 'zod';
 // List invitations for an app
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   const authResult = await verifyAuth(request);
 
@@ -24,7 +24,7 @@ export async function GET(
     const { data: app, error: appError } = await supabaseAdmin
       .from('apps')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', context.params.id)
       .eq('user_id', authResult.user.id)
       .single();
 
@@ -39,7 +39,7 @@ export async function GET(
     const { data: invitations, error } = await supabaseAdmin
       .from('invitations')
       .select('*')
-      .eq('app_id', params.id)
+      .eq('app_id', context.params.id)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -82,7 +82,7 @@ export async function GET(
 // Create a new invitation
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   const authResult = await verifyAuth(request);
 
@@ -98,7 +98,7 @@ export async function POST(
     const { data: app, error: appError } = await supabaseAdmin
       .from('apps')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', context.params.id)
       .eq('user_id', authResult.user.id)
       .single();
 
@@ -116,7 +116,7 @@ export async function POST(
     const { data: invitation, error } = await supabaseAdmin
       .from('invitations')
       .insert({
-        app_id: params.id,
+        app_id: context.params.id,
         inviter_id: validatedData.inviterId,
         invitee_identifier: validatedData.inviteeIdentifier,
         metadata: validatedData.metadata,

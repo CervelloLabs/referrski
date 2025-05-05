@@ -4,7 +4,7 @@ import { verifyAuth } from '@/middleware/auth';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   const authResult = await verifyAuth(request);
   if ('error' in authResult) {
@@ -16,14 +16,14 @@ export async function GET(
     const { count: uniqueInvites } = await supabaseAdmin
       .from('invitations')
       .select('invitee_identifier', { count: 'exact', head: true })
-      .eq('app_id', params.id)
+      .eq('app_id', context.params.id)
       .is('deleted_at', null);
 
     // Get completed invites count (signed up users)
     const { count: completedInvites } = await supabaseAdmin
       .from('invitations')
       .select('invitee_identifier', { count: 'exact', head: true })
-      .eq('app_id', params.id)
+      .eq('app_id', context.params.id)
       .eq('status', 'completed')
       .is('deleted_at', null);
 

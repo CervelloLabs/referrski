@@ -8,7 +8,7 @@ import { ZodError } from 'zod';
 // Update an app
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   const authResult = await verifyAuth(request);
 
@@ -24,7 +24,7 @@ export async function PUT(
     const { data: existingApp, error: fetchError } = await supabaseAdmin
       .from('apps')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', context.params.id)
       .eq('user_id', authResult.user.id)
       .single();
 
@@ -45,7 +45,7 @@ export async function PUT(
         webhook_url: validatedData.webhookUrl,
         auth_header: validatedData.authHeader,
       })
-      .eq('id', params.id)
+      .eq('id', context.params.id)
       .select()
       .single();
 
@@ -102,7 +102,7 @@ export async function PUT(
 // Delete an app
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   const authResult = await verifyAuth(request);
 
@@ -118,7 +118,7 @@ export async function DELETE(
     const { data: existingApp, error: fetchError } = await supabaseAdmin
       .from('apps')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', context.params.id)
       .eq('user_id', authResult.user.id)
       .single();
 
@@ -132,7 +132,7 @@ export async function DELETE(
     const { error } = await supabaseAdmin
       .from('apps')
       .delete()
-      .eq('id', params.id);
+      .eq('id', context.params.id);
 
     if (error) {
       throw error;
