@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Settings, Info, Code } from 'lucide-react';
+import { Settings, Info, Code, BarChart } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,11 @@ interface App {
   updatedAt: string;
 }
 
+interface AppStats {
+  uniqueInvites: number;
+  completedInvites: number;
+}
+
 interface AppCardProps {
   app: App;
   onUpdate?: (updatedApp: App) => void;
@@ -26,9 +31,12 @@ interface AppCardProps {
 export function AppCard({ app, onUpdate }: AppCardProps) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [webhookUrl, setWebhookUrl] = useState(app.webhookUrl || '');
   const [authHeader, setAuthHeader] = useState(app.authHeader || '');
+  const [stats, setStats] = useState<AppStats | null>(null);
+  const [isLoadingStats, setIsLoadingStats] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -65,6 +73,29 @@ export function AppCard({ app, onUpdate }: AppCardProps) {
     }
   };
 
+  const fetchStats = async () => {
+    setIsLoadingStats(true);
+    try {
+      const response = await fetchApi(`/api/apps/${app.id}/stats`);
+      setStats(response.data);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load statistics',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoadingStats(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isStatsOpen) {
+      fetchStats();
+    }
+  }, [isStatsOpen]);
+
   return (
     <>
       <Card className="hover:shadow-lg transition-shadow">
@@ -95,6 +126,15 @@ export function AppCard({ app, onUpdate }: AppCardProps) {
               className="h-8 w-8"
             >
               <Info className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsStatsOpen(true)}
+              title="View Statistics"
+              className="h-8 w-8"
+            >
+              <BarChart className="h-4 w-4" />
             </Button>
             <Button
               variant="ghost"
@@ -197,6 +237,44 @@ export function AppCard({ app, onUpdate }: AppCardProps) {
                 </p>
               </div>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Stats Dialog */}
+      <Dialog open={isStatsOpen} onOpenChange={setIsStatsOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Invitation Statistics</DialogTitle>
+            <DialogDescription>
+              View invitation metrics for your app.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            {isLoadingStats ? (
+              <div className="space-y-4">
+                <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse" />
+                <div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse" />
+              </div>
+            ) : stats ? (
+              <div className="space-y-6">
+                <div>
+                  <h4 className="font-medium mb-1">Unique Invites Sent</h4>
+                  <p className="text-2xl font-bold">{stats.uniqueInvites}</p>
+                </div>
+                <div>
+                  <h4 className="font-medium mb-1">Successful Sign-ups</h4>
+                  <p className="text-2xl font-bold">{stats.completedInvites}</p>
+                  {stats.uniqueInvites > 0 && (
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {Math.round((stats.completedInvites / stats.uniqueInvites) * 100)}% conversion rate
+                    </p>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">Failed to load statistics</p>
+            )}
           </div>
         </DialogContent>
       </Dialog>
