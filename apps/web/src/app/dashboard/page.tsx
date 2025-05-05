@@ -60,7 +60,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="container py-8">
+    <div className="py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Your Apps</h1>
         <CreateAppDialog onSuccess={handleAppCreated} />
