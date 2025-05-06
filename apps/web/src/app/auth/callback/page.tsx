@@ -4,6 +4,10 @@ import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 
+// Add dynamic rendering configuration
+export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
+
 export default function AuthCallbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -14,33 +18,41 @@ export default function AuthCallbackPage() {
 
   useEffect(() => {
     const handleAuthCallback = async () => {
-      const hash = window.location.hash;
-      if (hash) {
-        // Parse the hash fragment
-        const params = new URLSearchParams(hash.substring(1));
-        const accessToken = params.get('access_token');
-        const refreshToken = params.get('refresh_token');
-        const type = params.get('type');
+      try {
+        const hash = window.location.hash;
+        if (hash) {
+          // Parse the hash fragment
+          const params = new URLSearchParams(hash.substring(1));
+          const accessToken = params.get('access_token');
+          const refreshToken = params.get('refresh_token');
+          const type = params.get('type');
 
-        if (accessToken && type === 'signup') {
-          // Set the session
-          const { error } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken!,
-          });
+          if (accessToken && type === 'signup') {
+            // Set the session
+            const { error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken!,
+            });
 
-          if (error) {
-            console.error('Error setting session:', error.message);
-            router.push('/auth/error');
-            return;
+            if (error) {
+              console.error('Error setting session:', error.message);
+              router.push('/auth/error');
+              return;
+            }
+
+            // Redirect to the dashboard or home page
+            router.push('/dashboard');
+          } else {
+            // Handle other auth types or errors
+            router.push('/');
           }
-
-          // Redirect to the dashboard or home page
-          router.push('/dashboard');
         } else {
-          // Handle other auth types or errors
+          // No hash present, redirect to home
           router.push('/');
         }
+      } catch (error) {
+        console.error('Error in auth callback:', error);
+        router.push('/auth/error');
       }
     };
 
