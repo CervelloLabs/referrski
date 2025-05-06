@@ -2,15 +2,11 @@
 
 import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
+import { fetchApi } from '@/lib/api';
 
 function CallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
 
   useEffect(() => {
     const handleAuthCallback = async () => {
@@ -26,14 +22,18 @@ function CallbackContent() {
             const type = params.get('type');
 
             if (accessToken && type === 'signup') {
-              // Set the session
-              const { error } = await supabase.auth.setSession({
-                access_token: accessToken,
-                refresh_token: refreshToken!,
+              // Call our API to verify and set the session
+              const response = await fetchApi('/api/auth/callback', {
+                method: 'POST',
+                body: {
+                  access_token: accessToken,
+                  refresh_token: refreshToken,
+                  type
+                }
               });
 
-              if (error) {
-                console.error('Error setting session:', error.message);
+              if (!response.success) {
+                console.error('Error in auth callback:', response.message);
                 router.push('/auth/error');
                 return;
               }
@@ -56,13 +56,13 @@ function CallbackContent() {
     };
 
     handleAuthCallback();
-  }, [router, supabase.auth]);
+  }, [router]);
 
   return (
     <div className="flex min-h-screen items-center justify-center">
       <div className="text-center">
-        <h2 className="text-xl font-semibold mb-2">Completing authentication...</h2>
-        <p className="text-muted-foreground">Please wait while we verify your account.</p>
+        <h2 className="text-xl font-semibold mb-2">Verifying your account...</h2>
+        <p className="text-muted-foreground">Please wait while we complete the process.</p>
       </div>
     </div>
   );

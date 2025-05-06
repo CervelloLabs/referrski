@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { fetchApi, setSessionToken } from '@/lib/api';
 
 // Configuration object for Next.js
 export const config = {
@@ -20,7 +20,8 @@ export default function DashboardLayout({
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut();
+      await fetchApi('/api/auth/signout', { method: 'POST' });
+      setSessionToken(null);
       router.push('/');
     } catch (error) {
       console.error('Error logging out:', error);

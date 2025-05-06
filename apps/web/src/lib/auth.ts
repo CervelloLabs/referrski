@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { setSessionToken } from './api';
 
 // API URLs - we can configure this based on environment
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
@@ -72,6 +73,29 @@ export const auth = {
       throw new AuthError(result.message || 'Failed to sign in');
     }
 
+    // Store the session token
+    if (result.data?.session?.access_token) {
+      setSessionToken(result.data.session.access_token);
+    }
+
     return result;
   },
+
+  async signOut() {
+    const response = await fetch(`${API_URL}/api/auth/signout`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new AuthError(result.message || 'Failed to sign out');
+    }
+
+    // Clear the session token
+    setSessionToken(null);
+
+    return result;
+  }
 }; 

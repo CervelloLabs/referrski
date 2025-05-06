@@ -2,17 +2,37 @@ import { createBrowserClient } from '@supabase/ssr';
 
 const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  {
+    auth: {
+      flowType: 'pkce',
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true
+    },
+    cookieOptions: {
+      name: 'sb-session',
+      domain: process.env.NEXT_PUBLIC_COOKIE_DOMAIN,
+      path: '/',
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax'
+    }
+  }
 );
 
 interface FetchOptions extends RequestInit {
   body?: any;
 }
 
+// Store the session token in memory
+let sessionToken: string | null = null;
+
+export function setSessionToken(token: string | null) {
+  sessionToken = token;
+}
+
 export async function fetchApi(endpoint: string, options: FetchOptions = {}) {
-  const { data: { session }, error } = await supabase.auth.getSession();
-  
-  if (error || !session) {
+  if (!sessionToken && !endpoint.includes('/auth/')) {
     throw new Error('Not authenticated');
   }
 
@@ -23,7 +43,7 @@ export async function fetchApi(endpoint: string, options: FetchOptions = {}) {
   
   const headers = {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${session.access_token}`,
+    ...(sessionToken && { 'Authorization': `Bearer ${sessionToken}` }),
     ...options.headers,
   };
 

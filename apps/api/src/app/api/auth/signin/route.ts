@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import type { AuthResponse } from '@/types/auth';
 import { signInSchema } from '@/schemas/auth';
 import { ZodError } from 'zod';
+import { cookies } from 'next/headers';
 
 export async function POST(request: Request) {
   try {
@@ -37,8 +38,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Return success response
-    return NextResponse.json<AuthResponse>(
+    // Set secure HTTP-only cookie with the session
+    const response = NextResponse.json<AuthResponse>(
       {
         success: true,
         data: {
@@ -54,6 +55,17 @@ export async function POST(request: Request) {
       },
       { status: 200 }
     );
+
+    // Set the cookie on the response
+    response.cookies.set('session', authData.session.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      domain: process.env.NEXT_PUBLIC_COOKIE_DOMAIN,
+    });
+
+    return response;
   } catch (error) {
     console.error('Sign-in error:', error);
 
