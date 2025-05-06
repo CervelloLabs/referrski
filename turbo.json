@@ -5,7 +5,8 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": [".next/**", "!.next/cache/**"],
+      "env": []
     },
     "lint": {
       "dependsOn": ["^lint"]
@@ -19,5 +20,14 @@
       "env": ["PORT"]
     }
   },
-  "globalEnv": ["PORT"]
+  "globalEnv": [
+    "PORT",
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+  ],
+  "pipeline": {
+    "@referrski/api#build": {
+      "env": ["SUPABASE_SERVICE_ROLE_KEY"]
+    }
+  }
 }
