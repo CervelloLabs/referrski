@@ -2,7 +2,7 @@
 
 import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { fetchApi } from '@/lib/api';
+import { fetchApi, setSessionToken } from '@/lib/api';
 
 function CallbackContent() {
   const router = useRouter();
@@ -38,6 +38,9 @@ function CallbackContent() {
                 return;
               }
 
+              // Set the session token in memory
+              setSessionToken(accessToken);
+
               // Redirect to the dashboard or home page
               router.push('/dashboard');
             } else {
@@ -67,14 +70,6 @@ function CallbackContent() {
     </div>
   );
 }
-
-// Separate the page component from the configuration
-const config = {
-  runtime: 'edge',
-  dynamic: 'force-dynamic'
-} as const;
-
-export { config };
 
 export default function AuthCallbackPage() {
   return (

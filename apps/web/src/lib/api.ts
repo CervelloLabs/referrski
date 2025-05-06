@@ -1,25 +1,4 @@
-import { createBrowserClient } from '@supabase/ssr';
-
-const supabase = createBrowserClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  {
-    auth: {
-      flowType: 'pkce',
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: true
-    },
-    cookieOptions: {
-      name: 'sb-session',
-      domain: process.env.NEXT_PUBLIC_COOKIE_DOMAIN,
-      path: '/',
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax'
-    }
-  }
-);
-
+// API client interface
 interface FetchOptions extends RequestInit {
   body?: any;
 }
