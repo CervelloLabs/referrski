@@ -17,7 +17,9 @@ export async function fetchApi(endpoint: string, options: FetchOptions = {}) {
   }
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-  const url = endpoint.startsWith('/') ? `${API_URL}${endpoint}` : `${API_URL}/${endpoint}`;
+  const baseUrl = API_URL.replace(/\/+$/, '');
+  const cleanEndpoint = endpoint.replace(/^\/+/, '/');
+  const url = `${baseUrl}${cleanEndpoint}`;
   
   const headers = {
     'Content-Type': 'application/json',

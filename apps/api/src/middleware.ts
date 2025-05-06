@@ -10,7 +10,8 @@ export function middleware(request: NextRequest) {
         'Access-Control-Allow-Credentials': 'true',
         'Access-Control-Allow-Origin': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
         'Access-Control-Allow-Methods': 'GET,DELETE,PATCH,POST,PUT,OPTIONS',
-        'Access-Control-Allow-Headers': 'Authorization, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version',
+        'Access-Control-Allow-Headers': 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization',
+        'Access-Control-Max-Age': '86400', // 24 hours
       },
     });
   }
