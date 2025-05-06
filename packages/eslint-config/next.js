@@ -24,6 +24,13 @@ export const nextJsConfig = [
       globals: {
         ...globals.serviceworker,
       },
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
     },
   },
   {
@@ -44,11 +51,24 @@ export const nextJsConfig = [
       ...pluginReactHooks.configs.recommended.rules,
       // React scope no longer necessary with new JSX transform.
       "react/react-in-jsx-scope": "off",
+      // Configure hooks rules
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
+    },
+  },
+  {
+    files: ["**/*.ts", "**/*.tsx"],
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        project: ["./tsconfig.json"],
+      },
     },
   },
 ];
 
-module.exports = {
+// Export both configurations for backward compatibility
+export default {
   extends: [
     'next/core-web-vitals',
     'turbo',

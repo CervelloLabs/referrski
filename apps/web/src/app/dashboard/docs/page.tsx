@@ -3,11 +3,19 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
-export default function DocsPage() {
+// Separate the page component from the configuration
+const config = {
+  runtime: 'edge',
+  dynamic: 'force-dynamic'
+} as const;
+
+export { config };
+
+function DocsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [defaultTab, setDefaultTab] = useState('installation');
@@ -182,5 +190,20 @@ function MyScreen() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+export default function DocsPage() {
+  return (
+    <Suspense fallback={
+      <div className="container px-4 py-8">
+        <div className="flex items-center gap-4 mb-8">
+          <div className="h-8 w-8" />
+          <h1 className="text-3xl font-bold">Loading Documentation...</h1>
+        </div>
+      </div>
+    }>
+      <DocsContent />
+    </Suspense>
   );
 } 

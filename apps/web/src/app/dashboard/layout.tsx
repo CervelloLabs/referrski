@@ -5,6 +5,12 @@ import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
+// Configuration object for Next.js
+export const config = {
+  runtime: 'edge',
+  dynamic: 'force-dynamic'
+};
+
 export default function DashboardLayout({
   children,
 }: {

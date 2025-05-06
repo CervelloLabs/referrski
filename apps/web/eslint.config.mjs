@@ -10,7 +10,33 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
+  {
+    languageOptions: {
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+    },
+    linterOptions: {
+      reportUnusedDisableDirectives: true,
+    },
+    settings: {
+      react: {
+        version: 'detect',
+      },
+    },
+  },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    rules: {
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+    },
+  },
 ];
 
 export default eslintConfig;
