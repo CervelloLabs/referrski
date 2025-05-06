@@ -4,15 +4,15 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   // Define allowed origins
   const allowedOrigins = [
-    'https://referrski.vercel.app',    // Production web app
-    process.env.NEXT_PUBLIC_APP_URL,   // Dynamic origin from env
+    'https://referrski-web.vercel.app',  // Production web app
+    process.env.NEXT_PUBLIC_APP_URL,     // Dynamic origin from env
   ].filter((origin): origin is string => typeof origin === 'string');
 
   // Get the request's origin
   const origin = request.headers.get('origin');
   const allowedOrigin = origin && allowedOrigins.includes(origin)
     ? origin
-    : 'http://localhost:3000';
+    : 'https://referrski-web.vercel.app';
 
   // Handle OPTIONS preflight requests
   if (request.method === 'OPTIONS') {

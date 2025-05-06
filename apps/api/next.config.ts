@@ -5,8 +5,8 @@ const config: NextConfig = {
   async headers() {
     // Define allowed origins
     const allowedOrigins = [
-      'https://referrski.vercel.app',    // Production web app
-      process.env.NEXT_PUBLIC_APP_URL,   // Dynamic origin from env
+      'https://referrski-web.vercel.app',  // Production web app
+      process.env.NEXT_PUBLIC_APP_URL,     // Dynamic origin from env
     ].filter((origin): origin is string => typeof origin === 'string');
 
     return [
@@ -18,7 +18,7 @@ const config: NextConfig = {
             key: 'Access-Control-Allow-Origin', 
             value: process.env.NEXT_PUBLIC_APP_URL && allowedOrigins.includes(process.env.NEXT_PUBLIC_APP_URL)
               ? process.env.NEXT_PUBLIC_APP_URL 
-              : 'http://localhost:3000'
+              : 'https://referrski-web.vercel.app'
           },
           { key: 'Access-Control-Allow-Methods', value: 'GET,DELETE,PATCH,POST,PUT,OPTIONS' },
           { key: 'Access-Control-Allow-Headers', value: 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization' },
