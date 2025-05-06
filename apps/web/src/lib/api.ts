@@ -16,8 +16,8 @@ export async function fetchApi(endpoint: string, options: FetchOptions = {}) {
     throw new Error('Not authenticated');
   }
 
-  // Use relative URL since we have rewrite rules in place
-  const url = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  const url = endpoint.startsWith('/') ? `${API_URL}${endpoint}` : `${API_URL}/${endpoint}`;
   
   const headers = {
     'Content-Type': 'application/json',

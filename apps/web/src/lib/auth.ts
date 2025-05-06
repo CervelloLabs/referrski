@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-// Use relative URLs since we have rewrite rules in place
-const API_BASE = '/api';
+// API URLs - we can configure this based on environment
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 const signUpSchema = z.object({
   email: z.string().email(),
@@ -30,7 +30,7 @@ export const auth = {
   async signUp(data: SignUpData) {
     const validated = signUpSchema.parse(data);
     
-    const response = await fetch(`${API_BASE}/auth/signup`, {
+    const response = await fetch(`${API_URL}/api/auth/signup`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -54,7 +54,7 @@ export const auth = {
   async signIn(data: SignInData) {
     const validated = signInSchema.parse(data);
     
-    const response = await fetch(`${API_BASE}/auth/signin`, {
+    const response = await fetch(`${API_URL}/api/auth/signin`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
