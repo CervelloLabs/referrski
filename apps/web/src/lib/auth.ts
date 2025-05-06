@@ -93,21 +93,22 @@ export const auth = {
         credentials: 'include',
       });
 
+      // Clear the session token regardless of response
+      setSessionToken(null);
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to sign out' }));
+        // Check if there's any content before trying to parse JSON
+        const text = await response.text();
+        const errorData = text ? JSON.parse(text) : { message: 'Failed to sign out' };
         throw new AuthError(errorData.message || 'Failed to sign out');
       }
 
-      // Clear the session token
-      setSessionToken(null);
-
-      // Try to parse the response, but don't fail if it's empty
-      const result = await response.json().catch(() => ({ success: true }));
-      return result;
+      // Check if there's any content before trying to parse JSON
+      const text = await response.text();
+      return text ? JSON.parse(text) : { success: true };
     } catch (error) {
       console.error('Sign-out error:', error);
-      // Still clear the session token on error
-      setSessionToken(null);
+      // Session token already cleared above
       throw error instanceof AuthError ? error : new AuthError('Failed to sign out');
     }
   }

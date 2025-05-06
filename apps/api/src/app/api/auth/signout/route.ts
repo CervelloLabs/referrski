@@ -3,6 +3,23 @@ import { supabase } from '@/lib/supabase';
 import type { AuthResponse } from '@/types/auth';
 import { verifyAuth } from '@/middleware/auth';
 
+// Define allowed methods
+export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
+
+// OPTIONS handler for CORS
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Credentials': 'true',
+      'Access-Control-Max-Age': '86400',
+    },
+  });
+}
+
 export async function POST(request: Request) {
   try {
     // Verify the user is authenticated first
@@ -13,7 +30,12 @@ export async function POST(request: Request) {
           success: false,
           message: authResult.error.message,
         },
-        { status: authResult.error.status }
+        { 
+          status: authResult.error.status,
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }
       );
     }
 
