@@ -1,11 +1,27 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import type { AuthResponse } from '@/types/auth';
+import { verifyAuth } from '@/middleware/auth';
 
 export async function POST(request: Request) {
   try {
+    // Verify the user is authenticated first
+    const authResult = await verifyAuth(request);
+    if ('error' in authResult) {
+      return NextResponse.json<AuthResponse>(
+        {
+          success: false,
+          message: authResult.error.message,
+        },
+        { status: authResult.error.status }
+      );
+    }
+
     // Sign out from Supabase
-    await supabase.auth.signOut();
+    const { error: signOutError } = await supabase.auth.signOut();
+    if (signOutError) {
+      throw signOutError;
+    }
 
     // Create response that clears the session cookie
     const response = NextResponse.json<AuthResponse>(
@@ -13,7 +29,12 @@ export async function POST(request: Request) {
         success: true,
         message: 'Signed out successfully',
       },
-      { status: 200 }
+      { 
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      }
     );
 
     // Clear the session cookie
@@ -35,7 +56,12 @@ export async function POST(request: Request) {
         success: false,
         message: 'Internal server error',
       },
-      { status: 500 }
+      { 
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      }
     );
   }
 } 

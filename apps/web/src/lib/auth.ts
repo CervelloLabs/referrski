@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { setSessionToken } from './api';
+import { sessionToken } from './api';
 
 // API URLs - we can configure this based on environment
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
@@ -82,20 +83,32 @@ export const auth = {
   },
 
   async signOut() {
-    const response = await fetch(`${API_URL}/api/auth/signout`, {
-      method: 'POST',
-      credentials: 'include',
-    });
+    try {
+      const response = await fetch(`${API_URL}/api/auth/signout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(sessionToken && { 'Authorization': `Bearer ${sessionToken}` }),
+        },
+        credentials: 'include',
+      });
 
-    const result = await response.json();
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Failed to sign out' }));
+        throw new AuthError(errorData.message || 'Failed to sign out');
+      }
 
-    if (!response.ok) {
-      throw new AuthError(result.message || 'Failed to sign out');
+      // Clear the session token
+      setSessionToken(null);
+
+      // Try to parse the response, but don't fail if it's empty
+      const result = await response.json().catch(() => ({ success: true }));
+      return result;
+    } catch (error) {
+      console.error('Sign-out error:', error);
+      // Still clear the session token on error
+      setSessionToken(null);
+      throw error instanceof AuthError ? error : new AuthError('Failed to sign out');
     }
-
-    // Clear the session token
-    setSessionToken(null);
-
-    return result;
   }
 }; 

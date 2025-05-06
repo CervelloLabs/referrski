@@ -6,6 +6,8 @@ interface FetchOptions extends RequestInit {
 // Store the session token in memory
 let sessionToken: string | null = null;
 
+export { sessionToken };
+
 export function setSessionToken(token: string | null) {
   sessionToken = token;
 }
