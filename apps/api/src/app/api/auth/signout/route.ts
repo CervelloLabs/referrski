@@ -11,33 +11,42 @@ export const dynamic = 'force-dynamic';  // This ensures the route is not cached
 const ALLOWED_METHODS = ['POST', 'OPTIONS'];
 
 // Step 3: Add method handling
-export async function POST(request: Request) {
-  // Step 4: Method validation
-  if (!ALLOWED_METHODS.includes(request.method)) {
-    return new NextResponse(null, { 
-      status: 405,
-      headers: {
-        'Allow': ALLOWED_METHODS.join(', '),
-        'Content-Type': 'application/json',
-      }
-    });
-  }
+export async function OPTIONS(request: Request) {
+  const requestOrigin = request.headers.get('origin');
 
-  // Step 5: Handle OPTIONS (CORS preflight)
-  if (request.method === 'OPTIONS') {
-    return new NextResponse(null, {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Methods': ALLOWED_METHODS.join(', '),
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'Access-Control-Allow-Credentials': 'true',
-        'Access-Control-Max-Age': '86400',
-      },
-    });
+  // Define allowed origins for CORS
+  // Ensure NEXT_PUBLIC_APP_URL is set correctly in your Vercel environment for the API,
+  // pointing to the web app's domain (e.g., https://referrski-web.vercel.app)
+  const allowedOrigins = [
+    'https://referrski-web.vercel.app', // Explicitly allow production web app
+    process.env.NEXT_PUBLIC_APP_URL,   // For local dev or other configured environments
+  ].filter(Boolean) as string[]; // Ensure no undefined/empty strings
+
+  let corsOriginToAllow = 'https://referrski-web.vercel.app'; // Default/fallback
+
+  if (requestOrigin && allowedOrigins.includes(requestOrigin)) {
+    corsOriginToAllow = requestOrigin;
   }
+  
+  // It's important that Access-Control-Allow-Origin matches the client's origin
+
+  return new NextResponse(null, {
+    status: 204, // No Content for preflight
+    headers: {
+      'Access-Control-Allow-Origin': corsOriginToAllow,
+      'Access-Control-Allow-Credentials': 'true',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS', // Methods supported by this route
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization', // Headers client might send
+      'Access-Control-Max-Age': '86400', // Cache preflight response for 1 day
+    },
+  });
+}
+
+export async function POST(request: Request) {
+  // Next.js App Router ensures this function is only called for POST requests.
+  // The misplaced method checks from the previous version are removed.
 
   try {
-    // Step 6: Auth verification
     const authResult = await verifyAuth(request);
     if ('error' in authResult) {
       return NextResponse.json<AuthResponse>(
@@ -47,20 +56,22 @@ export async function POST(request: Request) {
         },
         { 
           status: authResult.error.status,
-          headers: {
-            'Content-Type': 'application/json',
-          }
+          headers: { 'Content-Type': 'application/json' }
         }
       );
     }
 
-    // Step 7: Supabase signout
-    const { error: signOutError } = await supabase.auth.signOut();
+    // Attempt to sign out from Supabase. 
+    // Using { scope: 'local' } invalidates only the current session.
+    const { error: signOutError } = await supabase.auth.signOut({ scope: 'local' }); 
+    
     if (signOutError) {
-      throw signOutError;
+      // Log the error for debugging. Even if Supabase fails, proceed to clear cookies.
+      console.error('Supabase signOut error:', signOutError.message);
+      // Depending on severity, you might choose to return a 500 here,
+      // but for signout, clearing client-side state is often prioritized.
     }
 
-    // Step 8: Create success response
     const response = NextResponse.json<AuthResponse>(
       {
         success: true,
@@ -68,37 +79,30 @@ export async function POST(request: Request) {
       },
       { 
         status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-        }
+        headers: { 'Content-Type': 'application/json' }
       }
     );
 
-    // Step 9: Clear session cookie
     response.cookies.set('session', '', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      domain: process.env.NEXT_PUBLIC_COOKIE_DOMAIN,
+      domain: process.env.NEXT_PUBLIC_COOKIE_DOMAIN, // Ensure this is correctly set for prod
       maxAge: 0, // Expire immediately
     });
 
     return response;
-  } catch (error) {
-    console.error('Sign-out error:', error);
-
-    // Step 10: Error handling
+  } catch (error: any) {
+    console.error('Sign-out route processing error:', error.message);
     return NextResponse.json<AuthResponse>(
       {
         success: false,
-        message: 'Internal server error',
+        message: 'Internal server error during sign-out',
       },
       { 
         status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-        }
+        headers: { 'Content-Type': 'application/json' }
       }
     );
   }

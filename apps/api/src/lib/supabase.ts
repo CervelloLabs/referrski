@@ -29,13 +29,7 @@ export const supabase = createClient(
       autoRefreshToken: false,
       detectSessionInUrl: false
     },
-    cookieOptions: {
-      name: 'sb-session',
-      domain: process.env.NEXT_PUBLIC_COOKIE_DOMAIN,
-      path: '/',
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax'
-    }
+
   }
 );
 
