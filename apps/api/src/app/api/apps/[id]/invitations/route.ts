@@ -8,6 +8,9 @@ import { ZodError } from 'zod';
 import { generateInvitationEmail } from '@/lib/email-templates';
 import { sendEmail } from '@/lib/email';
 
+// Maximum number of invites per user (across all apps)
+const INVITE_LIMIT = 10;
+
 // List invitations for an app
 export async function GET(
   request: NextRequest,
@@ -128,6 +131,25 @@ export async function POST(
         return NextResponse.json(
           { success: false, message: 'App not found' },
           { status: 404 }
+        );
+      }
+
+      // Check current invite usage
+      const { data: inviteUsage } = await supabaseAdmin
+        .from('user_invite_usage')
+        .select('total_invites')
+        .eq('user_id', authResult.user.id)
+        .single();
+
+      const currentInvites = inviteUsage?.total_invites || 0;
+      
+      if (currentInvites >= INVITE_LIMIT) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            message: `Invite limit of ${INVITE_LIMIT} reached. Please upgrade your plan to create more invites.`
+          },
+          { status: 403 }
         );
       }
 

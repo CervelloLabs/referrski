@@ -6,7 +6,6 @@ import { fetchApi, setSessionToken } from '@/lib/api';
 
 function CallbackContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
     const handleAuthCallback = async () => {

@@ -3,9 +3,11 @@ import { supabase } from '@/lib/supabase';
 
 export async function DELETE(
   _: NextRequest,
-  { params }: { params: { id: string; email: string } }
+  { params }: { params: Promise<{ id: string; email: string }> }
 ) {
   try {
+    const { id, email } = await params;
+    
     // Check if user is authenticated
     const {
       data: { user },
@@ -20,7 +22,7 @@ export async function DELETE(
     const { data: app, error: appError } = await supabase
       .from('apps')
       .select('id')
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('user_id', user.id)
       .single();
 
@@ -32,8 +34,8 @@ export async function DELETE(
     const { error: deleteError } = await supabase
       .from('invitations')
       .delete()
-      .eq('app_id', params.id)
-      .eq('inviter_id', decodeURIComponent(params.email));
+      .eq('app_id', id)
+      .eq('inviter_id', decodeURIComponent(email));
 
     if (deleteError) {
       console.error('Error deleting invitations:', deleteError);

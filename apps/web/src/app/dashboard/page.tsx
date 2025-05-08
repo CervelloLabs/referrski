@@ -7,6 +7,7 @@ import { Plus } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { CreateAppDialog } from '@/components/app/create-app-dialog';
 import { AppCard } from '@/components/app/app-card';
+import { InviteUsage } from '@/components/invite-usage';
 import { fetchApi } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 
@@ -47,7 +48,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchApps();
-  }, []);
+  }, [fetchApps]);
 
   const handleAppCreated = (newApp: App) => {
     setApps(prevApps => [...prevApps, newApp]);
@@ -64,6 +65,10 @@ export default function DashboardPage() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Your Apps</h1>
         <CreateAppDialog onSuccess={handleAppCreated} />
+      </div>
+
+      <div className="mb-8">
+        <InviteUsage />
       </div>
 
       {isLoading ? (
