@@ -93,18 +93,7 @@ function DocsContent() {
 
 // Initialize ReferrSki once at app startup
 ReferrSki.configure({
-  appId: '${appId || 'your-app-id'}',
-  inviterEmail: 'current-user@example.com'  // The email of the user sending invitations
-});`}
-                </pre>
-                <p className="text-sm text-muted-foreground mt-4">
-                  The <code>inviterEmail</code> should be set to the current user&apos;s email address. You can update this value when the user logs in or changes:
-                </p>
-                <pre className="bg-slate-950 text-slate-50 p-4 rounded-lg mt-2">
-{`// Update inviterEmail when user logs in or changes
-ReferrSki.configure({
-  appId: '${appId || 'your-app-id'}',
-  inviterEmail: userEmail
+  appId: '${appId || 'your-app-id'}'
 });`}
                 </pre>
               </div>
@@ -124,26 +113,53 @@ ReferrSki.configure({
               <div>
                 <h3 className="text-lg font-semibold mb-2">Creating Invitations</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  After configuring ReferrSki, you can use its static methods anywhere in your app to send email invitations:
+                  After configuring ReferrSki, you can create invitations with or without email notifications:
                 </p>
                 <pre className="bg-slate-950 text-slate-50 p-4 rounded-lg">
 {`import { ReferrSki } from '@referrski/react-native';
 
-// Send an email invitation
-async function inviteFriend(friendEmail: string) {
+// Create invitation without email
+async function inviteFriend(friendIdentifier: string) {
   try {
-    await ReferrSki.createInvitation(friendEmail);
-    // Email invitation sent successfully
+    await ReferrSki.createInvitation({
+      inviteeIdentifier: friendIdentifier,
+      inviterId: 'current-user@example.com',
+      metadata: {
+        inviterName: 'John Doe'
+      }
+    });
+    // Invitation created successfully
   } catch (error) {
     // Handle error
   }
 }
 
-// Verify an email invitation
-async function verifyInvitation(email: string) {
+// Create invitation with email notification
+async function inviteFriendWithEmail(friendEmail: string) {
   try {
-    await ReferrSki.verifyInvitation(email);
-    // Email invitation is valid
+    await ReferrSki.createInvitation({
+      inviteeIdentifier: friendEmail,
+      inviterId: 'current-user@example.com',
+      metadata: {
+        inviterName: 'John Doe'
+      },
+      email: {
+        fromName: 'John Doe',
+        subject: 'Join our app!',
+        content: 'Hey there! I think you\'d love using our app.'
+      }
+    });
+    // Invitation created and email sent successfully
+  } catch (error) {
+    // Handle error
+  }
+}
+
+// Verify an invitation
+async function verifyInvitation(identifier: string) {
+  try {
+    await ReferrSki.verifyInvitation(identifier);
+    // Invitation is valid
   } catch (error) {
     // Handle error
   }
@@ -166,7 +182,7 @@ async function verifyInvitation(email: string) {
               <div>
                 <h3 className="text-lg font-semibold mb-2">InviteModal</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  A pre-built modal component for collecting and sending email invitations. The modal automatically uses your ReferrSki configuration:
+                  A pre-built modal component for collecting and sending invitations, with optional email notifications:
                 </p>
                 <pre className="bg-slate-950 text-slate-50 p-4 rounded-lg">
 {`import { InviteModal } from '@referrski/react-native';
@@ -185,10 +201,12 @@ function MyScreen() {
       <InviteModal
         visible={visible}
         onClose={() => setVisible(false)}
-        inviterEmail="current-user@example.com"
+        inviterId="current-user@example.com"
+        inviterName="John Doe"
+        sendEmail={true} // Optional: set to false to disable email notifications
         onSuccess={() => {
           // Optional: Handle successful invitation
-          console.log('Email invitation sent successfully');
+          console.log('Invitation created successfully');
           setVisible(false);
         }}
         style={{
@@ -197,7 +215,7 @@ function MyScreen() {
             // Modal container styles
           },
           input: {
-            // Email input field styles
+            // Input field styles
           },
           button: {
             // Submit button styles
@@ -215,9 +233,9 @@ function MyScreen() {
         texts={{
           // Optional: Custom texts
           title: 'Invite Your Friends',
-          placeholder: 'Enter friend\'s email',
+          placeholder: 'Enter friend\'s email or identifier',
           button: 'Send Invitation',
-          success: 'Invitation email sent!',
+          success: 'Invitation sent!',
           error: 'Failed to send invitation'
         }}
       />
@@ -226,7 +244,7 @@ function MyScreen() {
 }`}
                 </pre>
                 <p className="text-sm text-muted-foreground mt-4">
-                  Make sure you&apos;ve called <code>ReferrSki.configure()</code> with the correct <code>inviterEmail</code> before using the InviteModal component.
+                  Make sure you&apos;ve called <code>ReferrSki.configure()</code> before using the InviteModal component.
                 </p>
               </div>
             </CardContent>

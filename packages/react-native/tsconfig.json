@@ -1,30 +1,21 @@
 {
   "compilerOptions": {
     "target": "es6",
-    "module": "es2015",
-    "declaration": true,
-    "outDir": "./dist",
-    "strict": true,
+    "module": "commonjs",
+    "lib": ["es6", "dom"],
     "jsx": "react-native",
+    "declaration": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "moduleResolution": "node",
+    "baseUrl": ".",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
-    "lib": ["es6", "dom"],
-    "noImplicitAny": true,
-    "noImplicitThis": true,
-    "strictNullChecks": true,
-    "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "types": ["react", "react-native"],
-    "baseUrl": ".",
-    "paths": {
-      "react": ["./node_modules/@types/react"],
-      "react/*": ["./node_modules/@types/react/*"],
-      "react-native": ["./node_modules/@types/react-native"]
-    }
+    "types": ["react", "react-native", "node"]
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts"]
 } 

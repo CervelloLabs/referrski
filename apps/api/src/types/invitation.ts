@@ -14,6 +14,11 @@ export interface CreateInvitationRequest {
   inviterId: string;
   inviteeIdentifier: string;
   metadata?: Record<string, any>;
+  email?: {
+    fromName: string;
+    subject: string;
+    content: string;
+  };
 }
 
 export interface VerifyInvitationRequest {

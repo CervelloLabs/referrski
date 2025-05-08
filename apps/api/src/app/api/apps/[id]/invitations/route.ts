@@ -5,6 +5,8 @@ import { verifyAuth } from '@/middleware/auth';
 import { createInvitationSchema } from '@/schemas/invitation';
 import type { InvitationResponse, InvitationsResponse } from '@/types/invitation';
 import { ZodError } from 'zod';
+import { generateInvitationEmail } from '@/lib/email-templates';
+import { sendEmail } from '@/lib/email';
 
 // List invitations for an app
 export async function GET(
@@ -101,7 +103,6 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Validate environment variables at runtime
     validateEnv();
     
     const { id } = await params;
@@ -133,6 +134,21 @@ export async function POST(
       const body = await request.json();
       const validatedData = createInvitationSchema.parse(body);
 
+      // Validate email format if email sending is requested
+      if (validatedData.email && !validatedData.inviteeIdentifier.includes('@')) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            message: 'Invalid email address',
+            errors: [{
+              field: 'inviteeIdentifier',
+              message: 'Must be a valid email address when email sending is enabled'
+            }]
+          },
+          { status: 400 }
+        );
+      }
+
       // Create the invitation
       const { data: invitation, error } = await supabaseAdmin
         .from('invitations')
@@ -150,7 +166,35 @@ export async function POST(
         throw error;
       }
 
-      // If webhook URL is configured, send notification
+      // Send email if email configuration is provided
+      if (validatedData.email) {
+        try {
+          const acceptUrl = `${process.env.NEXT_PUBLIC_APP_URL}/invitations/${invitation.id}/accept`;
+
+          // Generate email HTML
+          const emailHtml = generateInvitationEmail({
+            appName: app.name,
+            inviterName: validatedData.inviterId,
+            inviteeIdentifier: validatedData.inviteeIdentifier,
+            customContent: validatedData.email.content,
+            acceptUrl,
+          });
+
+          // Send the email
+          await sendEmail({
+            to: validatedData.inviteeIdentifier,
+            fromName: validatedData.email.fromName,
+            subject: validatedData.email.subject,
+            html: emailHtml,
+            replyTo: validatedData.inviterId.includes('@') ? validatedData.inviterId : undefined,
+          });
+        } catch (emailError) {
+          console.error('Failed to send invitation email:', emailError);
+          // Don't fail the request if email sending fails
+        }
+      }
+
+      // Send webhook notification if configured
       if (app.webhook_url) {
         try {
           const headers: Record<string, string> = {

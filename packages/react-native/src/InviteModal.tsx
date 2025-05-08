@@ -20,7 +20,9 @@ export interface InviteModalProps extends PropsWithChildren<any> {
   visible: boolean;
   onClose: () => void;
   onSuccess?: () => void;
-  inviterEmail: string;
+  inviterId: string;
+  inviterName: string;
+  sendEmail?: boolean;
   style?: {
     container?: StyleProp<ViewStyle>;
     input?: StyleProp<TextStyle>;
@@ -42,17 +44,19 @@ export function InviteModal({
   visible,
   onClose,
   onSuccess,
-  inviterEmail,
+  inviterId,
+  inviterName,
+  sendEmail = true,
   style = {},
   texts = {},
 }: InviteModalProps): JSX.Element {
-  const [inviteeEmail, setInviteeEmail] = useState('');
+  const [inviteeIdentifier, setInviteeIdentifier] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleInvite = async () => {
-    if (!inviteeEmail.trim()) {
-      setError('Please enter an email address');
+    if (!inviteeIdentifier.trim()) {
+      setError('Please enter an identifier');
       return;
     }
 
@@ -60,8 +64,21 @@ export function InviteModal({
     setError(null);
 
     try {
-      await ReferrSki.createInvitation(inviteeEmail.trim());
-      setInviteeEmail('');
+      await ReferrSki.sendInvite({
+        inviteeIdentifier: inviteeIdentifier.trim(),
+        inviterId,
+        metadata: {
+          inviterName
+        },
+        ...(sendEmail && {
+          email: {
+            fromName: inviterName,
+            subject: 'Join our app!',
+            content: 'Hey there! I think you\'d love using our app.'
+          }
+        })
+      });
+      setInviteeIdentifier('');
       onSuccess?.();
       onClose();
     } catch (err) {
@@ -78,117 +95,76 @@ export function InviteModal({
       animationType="slide"
       transparent
     >
-      <View style={[styles.overlay]}>
-        <View style={[styles.container, style.container]}>
-          <Text style={[styles.title, style.title]}>
-            {texts.title || 'Invite a Friend'}
+      <View style={[styles.container, style.container]}>
+        <Text style={[styles.title, style.title]}>
+          {texts.title || 'Invite Friends'}
+        </Text>
+        <TextInput
+          style={[styles.input, style.input]}
+          placeholder={texts.placeholder || 'Enter friend\'s email or identifier'}
+          value={inviteeIdentifier}
+          onChangeText={setInviteeIdentifier}
+          autoCapitalize="none"
+          keyboardType="email-address"
+        />
+        {error && (
+          <Text style={[styles.error, style.error]}>
+            {error}
           </Text>
-
-          <TextInput
-            style={[styles.input, style.input]}
-            placeholder={texts.placeholder || 'Enter friend\'s email'}
-            value={inviteeEmail}
-            onChangeText={setInviteeEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-            editable={!isLoading}
-          />
-
-          {error && (
-            <Text style={[styles.error, style.error]}>
-              {error}
+        )}
+        <TouchableOpacity
+          style={[styles.button, style.button]}
+          onPress={handleInvite}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={[styles.buttonText, style.buttonText]}>
+              {texts.button || 'Send Invitation'}
             </Text>
           )}
-
-          <TouchableOpacity
-            style={[styles.button, style.button]}
-            onPress={handleInvite}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <ActivityIndicator color="#FFFFFF" />
-            ) : (
-              <Text style={[styles.buttonText, style.buttonText]}>
-                {texts.button || 'Send Invitation'}
-              </Text>
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={onClose}
-            disabled={isLoading}
-          >
-            <Text style={styles.closeButtonText}>Cancel</Text>
-          </TouchableOpacity>
-        </View>
+        </TouchableOpacity>
       </View>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  overlay: {
+  container: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  container: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     padding: 20,
-    width: '90%',
-    maxWidth: 400,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 5,
-      },
-    }),
   },
   title: {
-    fontSize: 20,
-    fontWeight: '600',
+    fontSize: 24,
+    fontWeight: 'bold',
     marginBottom: 20,
-    textAlign: 'center',
+    color: '#fff',
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-    fontSize: 16,
+    width: '100%',
+    padding: Platform.OS === 'ios' ? 15 : 10,
+    backgroundColor: '#fff',
+    borderRadius: 5,
+    marginBottom: 10,
   },
   button: {
-    backgroundColor: '#3B82F6',
-    borderRadius: 8,
-    padding: 14,
+    width: '100%',
+    padding: 15,
+    backgroundColor: '#007AFF',
+    borderRadius: 5,
     alignItems: 'center',
-    marginBottom: 12,
   },
   buttonText: {
-    color: '#FFFFFF',
+    color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
   error: {
-    color: '#EF4444',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  closeButton: {
-    alignItems: 'center',
-  },
-  closeButtonText: {
-    color: '#6B7280',
-    fontSize: 16,
+    color: '#ff3b30',
+    marginBottom: 10,
   },
 }); 

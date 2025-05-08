@@ -1,6 +1,6 @@
 # ReferrSki React Native SDK
 
-The ReferrSki React Native SDK provides a simple way to implement email-based referral and invitation functionality in your React Native applications.
+The ReferrSki React Native SDK provides a simple way to implement referral and invitation functionality in your React Native applications, with optional email-based notifications.
 
 ## Installation
 
@@ -14,14 +14,13 @@ pnpm add @referrski/react-native
 
 ## Configuration
 
-Before using the SDK, you need to configure it with your app ID and the inviter's email address. This should be done once when your app initializes:
+Before using the SDK, you need to configure it with your app ID:
 
 ```typescript
 import { ReferrSki } from '@referrski/react-native';
 
 ReferrSki.configure({
-  appId: 'your-app-id',
-  inviterEmail: 'inviter@example.com'
+  appId: 'your-app-id'
 });
 ```
 
@@ -29,12 +28,38 @@ ReferrSki.configure({
 
 ### Creating Invitations
 
-To send an email invitation to a potential user:
+You can create invitations with or without email notifications:
 
 ```typescript
+// Create invitation without email notification
 try {
-  await ReferrSki.createInvitation('friend@example.com');
-  // Invitation email sent successfully
+  await ReferrSki.createInvitation({
+    inviteeIdentifier: 'friend@example.com',
+    inviterId: 'current-user@example.com',
+    metadata: {
+      inviterName: 'John Doe'
+    }
+  });
+  // Invitation created successfully
+} catch (error) {
+  // Handle error
+}
+
+// Create invitation with email notification
+try {
+  await ReferrSki.createInvitation({
+    inviteeIdentifier: 'friend@example.com',
+    inviterId: 'current-user@example.com',
+    metadata: {
+      inviterName: 'John Doe'
+    },
+    email: {
+      fromName: 'John Doe',
+      subject: 'Join our app!',
+      content: 'Hey there! I think you\'d love using our app.'
+    }
+  });
+  // Invitation created and email sent successfully
 } catch (error) {
   // Handle error
 }
@@ -42,7 +67,7 @@ try {
 
 ### Verifying Invitations
 
-To verify if an email address has a valid invitation:
+To verify if an identifier has a valid invitation:
 
 ```typescript
 try {
@@ -55,12 +80,12 @@ try {
 
 ### Deleting User Data (GDPR Compliance)
 
-To delete all invitations associated with a specific inviter email (requires authentication):
+To delete all invitations associated with a specific inviter (requires authentication):
 
 ```typescript
 try {
   await ReferrSki.deleteInviterData('user@example.com');
-  // All invitations from this email have been deleted
+  // All invitations from this user have been deleted
 } catch (error) {
   if (error.message.includes('Unauthorized')) {
     // Handle authentication error
@@ -76,7 +101,7 @@ Note: The user must be authenticated and have access to the app to delete data. 
 
 ### Using the InviteModal Component
 
-The SDK includes a pre-built modal component for collecting and sending email invitations:
+The SDK includes a pre-built modal component for collecting and sending invitations:
 
 ```typescript
 import { InviteModal } from '@referrski/react-native';
@@ -93,15 +118,17 @@ function MyComponent() {
       <InviteModal
         visible={visible}
         onClose={() => setVisible(false)}
-        inviterEmail="current-user@example.com"
+        inviterId="current-user@example.com"
+        inviterName="John Doe"
+        sendEmail={true} // Optional: set to false to disable email notifications
         onSuccess={() => {
-          console.log('Email invitation sent successfully');
+          console.log('Invitation created successfully');
           setVisible(false);
         }}
         style={{
           // Optional: Custom styles
           container: { /* Modal container styles */ },
-          input: { /* Email input field styles */ },
+          input: { /* Input field styles */ },
           button: { /* Submit button styles */ },
           buttonText: { /* Button text styles */ },
           title: { /* Title text styles */ },
@@ -110,9 +137,9 @@ function MyComponent() {
         texts={{
           // Optional: Custom texts
           title: 'Invite Your Friends',
-          placeholder: 'Enter friend\'s email',
+          placeholder: 'Enter friend\'s email or identifier',
           button: 'Send Invitation',
-          success: 'Invitation email sent!',
+          success: 'Invitation sent!',
           error: 'Failed to send invitation'
         }}
       />
@@ -129,6 +156,7 @@ The SDK throws errors in the following cases:
 - When invitations cannot be created or verified
 - When the user is not authenticated (for deletion operations)
 - When the user doesn't have permission to perform an operation
+- When email configuration is provided with an invalid email address
 
 ## API Reference
 
@@ -139,33 +167,39 @@ Configures the SDK with your application settings.
 Parameters:
 - `config`: ReferrSkiConfiguration
   - `appId`: string - Your ReferrSki application ID
-  - `inviterEmail`: string - The email address of the user sending invitations
 
-### ReferrSki.createInvitation(inviteeEmail)
+### ReferrSki.createInvitation(params)
 
-Creates and sends a new email invitation.
+Creates a new invitation, optionally sending an email notification.
 
 Parameters:
-- `inviteeEmail`: string - The email address of the person to invite
+- `params`: CreateInvitationParams
+  - `inviteeIdentifier`: string - The identifier (e.g., email) of the person to invite
+  - `inviterId`: string - The identifier of the person sending the invitation
+  - `metadata?`: object - Optional metadata about the invitation
+  - `email?`: EmailConfig - Optional email configuration
+    - `fromName`: string - Name to show in the email
+    - `subject`: string - Email subject line
+    - `content`: string - Email content
+
+Returns: Promise<InvitationResponse>
+
+### ReferrSki.verifyInvitation(inviteeIdentifier)
+
+Verifies if an invitation exists for the specified identifier.
+
+Parameters:
+- `inviteeIdentifier`: string - The identifier to verify
 
 Returns: Promise<void>
 
-### ReferrSki.verifyInvitation(inviteeEmail)
+### ReferrSki.deleteInviterData(inviterId)
 
-Verifies if an invitation exists for the specified email address.
-
-Parameters:
-- `inviteeEmail`: string - The email address to verify
-
-Returns: Promise<void>
-
-### ReferrSki.deleteInviterData(inviterEmail)
-
-Deletes all invitations associated with a specific inviter email for the current app.
+Deletes all invitations associated with a specific inviter for the current app.
 Requires authentication and app access.
 
 Parameters:
-- `inviterEmail`: string - The email address whose invitations should be deleted
+- `inviterId`: string - The identifier whose invitations should be deleted
 
 Returns: Promise<void>
 
@@ -174,7 +208,9 @@ Returns: Promise<void>
 Props:
 - `visible`: boolean - Controls the visibility of the modal
 - `onClose`: () => void - Callback function when the modal is closed
-- `inviterEmail`: string - Email address of the user sending invitations
+- `inviterId`: string - Identifier of the user sending invitations
+- `inviterName`: string - Name of the user sending invitations
+- `sendEmail?`: boolean - Whether to send email notifications (default: true)
 - `onSuccess?`: () => void - Optional callback when invitation is sent successfully
 - `style?`: Object - Optional styles for customizing the modal appearance
 - `texts?`: Object - Optional custom texts for the modal 

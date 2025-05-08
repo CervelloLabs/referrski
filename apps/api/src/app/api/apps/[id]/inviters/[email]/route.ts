@@ -1,15 +1,11 @@
 import { NextRequest } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
-import { Database } from '@/types/supabase';
+import { supabase } from '@/lib/supabase';
 
 export async function DELETE(
-  request: NextRequest,
+  _: NextRequest,
   { params }: { params: { id: string; email: string } }
 ) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies });
-
     // Check if user is authenticated
     const {
       data: { user },
