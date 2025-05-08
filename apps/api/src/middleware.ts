@@ -4,7 +4,7 @@ import { rateLimit } from '@daveyplate/next-rate-limit';
 
 // Simple in-memory store - consider using Vercel KV or Redis for production
 const ipRateLimits = new Map();
-const MAX_REQUESTS = 100; // Adjust as needed
+const MAX_REQUESTS = 5; // Adjust as needed
 const TIME_WINDOW = 60 * 1000; // 1 minute in milliseconds
 
 export async function middleware(request: NextRequest) {
