@@ -20,7 +20,7 @@ export interface InviteModalProps extends PropsWithChildren<any> {
   visible: boolean;
   onClose: () => void;
   onSuccess?: () => void;
-  inviterId: string;
+  inviterEmail: string;
   style?: {
     container?: StyleProp<ViewStyle>;
     input?: StyleProp<TextStyle>;
@@ -42,16 +42,16 @@ export function InviteModal({
   visible,
   onClose,
   onSuccess,
-  inviterId,
+  inviterEmail,
   style = {},
   texts = {},
 }: InviteModalProps): JSX.Element {
-  const [email, setEmail] = useState('');
+  const [inviteeEmail, setInviteeEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleInvite = async () => {
-    if (!email.trim()) {
+    if (!inviteeEmail.trim()) {
       setError('Please enter an email address');
       return;
     }
@@ -60,8 +60,8 @@ export function InviteModal({
     setError(null);
 
     try {
-      await ReferrSki.createInvitation(email.trim());
-      setEmail('');
+      await ReferrSki.createInvitation(inviteeEmail.trim());
+      setInviteeEmail('');
       onSuccess?.();
       onClose();
     } catch (err) {
@@ -86,9 +86,9 @@ export function InviteModal({
 
           <TextInput
             style={[styles.input, style.input]}
-            placeholder={texts.placeholder || 'Enter email address'}
-            value={email}
-            onChangeText={setEmail}
+            placeholder={texts.placeholder || 'Enter friend\'s email'}
+            value={inviteeEmail}
+            onChangeText={setInviteeEmail}
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}

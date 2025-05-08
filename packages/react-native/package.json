@@ -5,7 +5,9 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch"
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build",
+    "publish-package": "npm publish --access public"
   },
   "dependencies": {
     "react": "18.2.0",

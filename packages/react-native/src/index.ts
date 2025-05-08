@@ -1,17 +1,17 @@
 interface ReferrSkiConfiguration {
   appId: string;
-  inviterId: string;
+  inviterEmail: string;
 }
 
 class ReferrSki {
   private static instance: ReferrSki;
   private appId: string;
-  private inviterId: string;
+  private inviterEmail: string;
   private readonly apiUrl: string = 'https://api.referrski.com';
 
   private constructor(config: ReferrSkiConfiguration) {
     this.appId = config.appId;
-    this.inviterId = config.inviterId;
+    this.inviterEmail = config.inviterEmail;
   }
 
   static configure(config: ReferrSkiConfiguration): void {
@@ -33,8 +33,8 @@ class ReferrSki {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        inviterId: instance.inviterId,
-        inviteeIdentifier: inviteeEmail,
+        inviterEmail: instance.inviterEmail,
+        inviteeEmail,
       }),
     });
 
@@ -51,12 +51,44 @@ class ReferrSki {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        inviteeIdentifier: inviteeEmail,
+        inviteeEmail,
       }),
     });
 
     if (!response.ok) {
       throw new Error('Failed to verify invitation');
+    }
+  }
+
+  /**
+   * Deletes all invitations associated with a specific inviter email for the current app.
+   * This is useful for GDPR compliance when users request their data to be deleted.
+   * Note: The user must be authenticated and have access to the app to perform this operation.
+   * 
+   * @param inviterEmail - The email address whose invitations should be deleted
+   * @throws Error if the deletion fails, if ReferrSki is not configured, or if the user is not authorized
+   */
+  static async deleteInviterData(inviterEmail: string): Promise<void> {
+    const instance = ReferrSki.getInstance();
+    const response = await fetch(
+      `${instance.apiUrl}/api/apps/${instance.appId}/inviters/${encodeURIComponent(inviterEmail)}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // Important: Include cookies for authentication
+      }
+    );
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Unauthorized. User must be authenticated to delete data.');
+      } else if (response.status === 404) {
+        throw new Error('App not found or access denied.');
+      } else {
+        throw new Error('Failed to delete inviter data');
+      }
     }
   }
 }
