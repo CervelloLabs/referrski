@@ -59,8 +59,8 @@ export async function middleware(request: NextRequest) {
     return await rateLimit({
       request,
       response,
-      sessionLimit: 60,   // 60 requests per session window
-      ipLimit: 120,       // 120 requests per IP window
+      sessionLimit: 5,   // 60 requests per session window
+      ipLimit: 10,       // 120 requests per IP window
       sessionWindow: 60,  // 60 second window for session
       ipWindow: 60,       // 60 second window for IP
     });
