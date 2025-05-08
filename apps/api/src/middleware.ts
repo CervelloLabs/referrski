@@ -1,7 +1,13 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { rateLimit } from '@daveyplate/next-rate-limit';
 
-export function middleware(request: NextRequest) {
+// Simple in-memory store - consider using Vercel KV or Redis for production
+const ipRateLimits = new Map();
+const MAX_REQUESTS = 100; // Adjust as needed
+const TIME_WINDOW = 60 * 1000; // 1 minute in milliseconds
+
+export async function middleware(request: NextRequest) {
   // Define allowed origins
   const allowedOrigins = [
     'https://referrski-web.vercel.app',  // Original Vercel domain for web app
@@ -26,6 +32,13 @@ export function middleware(request: NextRequest) {
   // If requestOrigin is null (e.g., same-origin request, or server-to-server), 
   // Access-Control-Allow-Origin might not be strictly necessary or can be the default.
 
+  // Create the base response
+  const response = NextResponse.next();
+  
+  // Set CORS headers
+  response.headers.set('Access-Control-Allow-Credentials', 'true');
+  response.headers.set('Access-Control-Allow-Origin', accessControlAllowOrigin);
+
   // Handle OPTIONS preflight requests
   if (request.method === 'OPTIONS') {
     return new NextResponse(null, {
@@ -40,11 +53,19 @@ export function middleware(request: NextRequest) {
     });
   }
 
-  // Add CORS headers to all other responses
-  const response = NextResponse.next();
-  response.headers.set('Access-Control-Allow-Credentials', 'true');
-  response.headers.set('Access-Control-Allow-Origin', accessControlAllowOrigin);
-  
+  // If this is an API route, apply rate limiting
+  if (request.nextUrl.pathname.startsWith('/api/')) {
+    // Apply rate limiting with stricter limits for API routes
+    return await rateLimit({
+      request,
+      response,
+      sessionLimit: 60,   // 60 requests per session window
+      ipLimit: 120,       // 120 requests per IP window
+      sessionWindow: 60,  // 60 second window for session
+      ipWindow: 60,       // 60 second window for IP
+    });
+  }
+
   return response;
 }
 

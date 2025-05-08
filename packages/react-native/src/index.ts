@@ -7,6 +7,7 @@ export class ReferrSki {
 
   private constructor(appId: string) {
     this.appId = appId;
+    this.apiUrl = 'https://api.referrski.com';
   }
 
   public static configure(config: { appId: string }): void {

@@ -1,6 +1,6 @@
 {
   "name": "@referrski/react-native",
-  "version": "0.1.0",
+  "version": "0.1.3",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -11,29 +11,28 @@
     "test": "jest",
     "test:watch": "jest --watch"
   },
-  "dependencies": {
-    "react": "18.2.0",
-    "react-native": "0.72.6"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/react": "^14.2.1",
     "@types/jest": "^29.5.14",
     "@types/node": "^20.17.32",
     "@types/react": "18.2.37",
-    "@types/react-native": "0.72.6",
+    "@types/react-native": "0.73.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
+    "react": "18.2.0",
+    "react-native": "0.76.5",
     "ts-jest": "^29.3.2",
     "typescript": "5.0.4"
   },
   "peerDependencies": {
-    "react": "18.x",
+    "react": ">=18.0.0",
     "react-native": ">=0.72.0"
   },
   "resolutions": {
     "@types/react": "18.2.37",
-    "@types/react-native": "0.72.6",
+    "@types/react-native": "0.76.0",
     "react": "18.2.0"
   }
 }
