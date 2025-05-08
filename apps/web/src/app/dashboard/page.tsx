@@ -48,7 +48,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchApps();
-  }, [fetchApps]);
+  }, []);
 
   const handleAppCreated = (newApp: App) => {
     setApps(prevApps => [...prevApps, newApp]);

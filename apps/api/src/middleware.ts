@@ -7,7 +7,21 @@ const ipRateLimits = new Map();
 const MAX_REQUESTS = 5; // Adjust as needed
 const TIME_WINDOW = 60 * 1000; // 1 minute in milliseconds
 
+// List of blocked IP addresses
+const BLOCKED_IPS = ['83.233.246.234']; // Add the spamming IP address
+
 export async function middleware(request: NextRequest) {
+  // Block specific IPs before processing anything else
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim();
+  if (ip && BLOCKED_IPS.includes(ip)) {
+    return new NextResponse(JSON.stringify({ error: 'Access denied' }), {
+      status: 403,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  }
+
   // Define allowed origins
   const allowedOrigins = [
     'https://referrski-web.vercel.app',  // Original Vercel domain for web app

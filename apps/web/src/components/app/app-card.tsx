@@ -94,7 +94,7 @@ export function AppCard({ app, onUpdate }: AppCardProps) {
     if (isStatsOpen) {
       fetchStats();
     }
-  }, [isStatsOpen, fetchStats]);
+  }, [isStatsOpen]);
 
   return (
     <>
