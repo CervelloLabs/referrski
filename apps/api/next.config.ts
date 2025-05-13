@@ -7,6 +7,8 @@ const config: NextConfig = {
     const allowedOrigins = [
       'https://referrski-web.vercel.app',  // Production web app
       process.env.NEXT_PUBLIC_APP_URL,     // Dynamic origin from env
+      // Add localhost:3000 for development mode
+      process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : null,
     ].filter((origin): origin is string => typeof origin === 'string');
 
     return [

@@ -174,7 +174,7 @@ export function AppCard({ app, onUpdate }: AppCardProps) {
               <Label htmlFor="authHeader">Authentication Header</Label>
               <Input
                 id="authHeader"
-                placeholder="Bearer token123"
+                placeholder="token123"
                 value={authHeader}
                 onChange={(e) => setAuthHeader(e.target.value)}
                 disabled={isLoading}
