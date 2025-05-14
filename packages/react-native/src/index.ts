@@ -1,4 +1,4 @@
-import type { SendInviteOptions, InvitationResponse, InvitationsResponse } from './types';
+import type { SendInviteOptions, InvitationResponse } from './types';
 
 export class ReferrSki {
   private static instance: ReferrSki | null = null;
@@ -27,7 +27,7 @@ export class ReferrSki {
 
   public static async sendInvite(options: SendInviteOptions): Promise<InvitationResponse> {
     const instance = ReferrSki.getInstance();
-    const response = await fetch(`${instance.apiUrl}/apps/${instance.appId}/invitations`, {
+    const response = await fetch(`${instance.apiUrl}/api/apps/${instance.appId}/invitations`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -44,26 +44,10 @@ export class ReferrSki {
     return response.json();
   }
 
-  public static async getInvitations(): Promise<InvitationsResponse> {
-    const instance = ReferrSki.getInstance();
-    const response = await fetch(`${instance.apiUrl}/apps/${instance.appId}/invitations`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${instance.apiKey}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch invitations');
-    }
-
-    return response.json();
-  }
-
   public static async deleteInviterData(inviterEmail: string): Promise<{ success: boolean }> {
     const instance = ReferrSki.getInstance();
     const response = await fetch(
-      `${instance.apiUrl}/apps/${instance.appId}/inviters/${encodeURIComponent(inviterEmail)}`,
+      `${instance.apiUrl}/api/apps/${instance.appId}/inviters/${encodeURIComponent(inviterEmail)}`,
       {
         method: 'DELETE',
         headers: {
@@ -77,6 +61,24 @@ export class ReferrSki {
     }
 
     return { success: true };
+  }
+
+  public static async verifySignup(options: { inviteeIdentifier: string, invitationId?: string }): Promise<{ success: boolean; verified: boolean }> {
+    const instance = ReferrSki.getInstance();
+    const response = await fetch(`${instance.apiUrl}/api/apps/${instance.appId}/invitations/verify`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${instance.apiKey}`,
+      },
+      body: JSON.stringify(options),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to verify signup');
+    }
+
+    return response.json();
   }
 }
 

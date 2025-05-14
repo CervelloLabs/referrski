@@ -30,6 +30,12 @@ export interface InviteModalProps extends PropsWithChildren<any> {
     buttonText?: StyleProp<TextStyle>;
     title?: StyleProp<TextStyle>;
     error?: StyleProp<TextStyle>;
+    closeButton?: StyleProp<ViewStyle>;
+    closeButtonText?: StyleProp<TextStyle>;
+    overlay?: StyleProp<ViewStyle>;
+    modalCard?: StyleProp<ViewStyle>;
+    description?: StyleProp<TextStyle>;
+    inputContainer?: StyleProp<ViewStyle>;
   };
   texts?: {
     title?: string;
@@ -92,79 +98,145 @@ export function InviteModal({
     <Modal
       visible={visible}
       onRequestClose={onClose}
-      animationType="slide"
+      animationType="fade"
       transparent
     >
-      <View style={[styles.container, style.container]}>
-        <Text style={[styles.title, style.title]}>
-          {texts.title || 'Invite Friends'}
-        </Text>
-        <TextInput
-          style={[styles.input, style.input]}
-          placeholder={texts.placeholder || 'Enter friend\'s email or identifier'}
-          value={inviteeIdentifier}
-          onChangeText={setInviteeIdentifier}
-          autoCapitalize="none"
-          keyboardType="email-address"
-        />
-        {error && (
-          <Text style={[styles.error, style.error]}>
-            {error}
+      <View style={[styles.overlay, style.overlay]}>
+        <View style={[styles.modalCard, style.container]}>
+          <TouchableOpacity 
+            style={[styles.closeButton, style.closeButton]} 
+            onPress={onClose}
+          >
+            <Text style={[styles.closeButtonText, style.closeButtonText]}>✕</Text>
+          </TouchableOpacity>
+          <Text style={[styles.title, style.title]}>
+            {texts.title || 'Invite Friends'}
           </Text>
-        )}
-        <TouchableOpacity
-          style={[styles.button, style.button]}
-          onPress={handleInvite}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={[styles.buttonText, style.buttonText]}>
-              {texts.button || 'Send Invitation'}
+          <Text style={styles.description}>
+            Share this app with your friends and family
+          </Text>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={[styles.input, style.input]}
+              placeholder={texts.placeholder || 'Enter friend\'s email or identifier'}
+              placeholderTextColor="#9ca3af"
+              value={inviteeIdentifier}
+              onChangeText={setInviteeIdentifier}
+              autoCapitalize="none"
+              keyboardType="email-address"
+            />
+          </View>
+          {error && (
+            <Text style={[styles.error, style.error]}>
+              {error}
             </Text>
           )}
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, isLoading && styles.buttonDisabled, style.button]}
+            onPress={handleInvite}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <Text style={[styles.buttonText, style.buttonText]}>
+                {texts.button || 'Send Invitation'}
+              </Text>
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  overlay: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
     padding: 20,
   },
+  modalCard: {
+    width: '100%',
+    maxWidth: 400,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 24,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 22,
+    fontWeight: '700',
+    marginBottom: 8,
+    color: '#111827',
+    textAlign: 'center',
+  },
+  description: {
+    fontSize: 14,
+    color: '#6b7280',
     marginBottom: 20,
-    color: '#fff',
+    textAlign: 'center',
+  },
+  inputContainer: {
+    marginBottom: 16,
+    width: '100%',
   },
   input: {
     width: '100%',
-    padding: Platform.OS === 'ios' ? 15 : 10,
-    backgroundColor: '#fff',
-    borderRadius: 5,
-    marginBottom: 10,
+    padding: Platform.OS === 'ios' ? 15 : 12,
+    backgroundColor: '#f9fafb',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 8,
+    fontSize: 15,
+    color: '#111827',
   },
   button: {
     width: '100%',
     padding: 15,
-    backgroundColor: '#007AFF',
-    borderRadius: 5,
+    backgroundColor: '#6366f1',
+    borderRadius: 8,
     alignItems: 'center',
+    marginTop: 8,
+  },
+  buttonDisabled: {
+    backgroundColor: '#a5b4fc',
   },
   buttonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   error: {
-    color: '#ff3b30',
-    marginBottom: 10,
+    color: '#ef4444',
+    fontSize: 14,
+    marginBottom: 12,
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 30,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  closeButtonText: {
+    fontSize: 20,
+    color: '#9ca3af',
+    fontWeight: '500',
   },
 }); 
