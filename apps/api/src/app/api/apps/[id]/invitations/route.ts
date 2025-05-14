@@ -1,12 +1,13 @@
 import { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { supabaseAdmin, validateEnv } from '@/lib/supabase';
-import { verifyAuth } from '@/middleware/auth';
+import { verifyMobileAuth } from '@/middleware/mobileAuth';
 import { createInvitationSchema } from '@/schemas/invitation';
 import type { InvitationResponse, InvitationsResponse } from '@/types/invitation';
 import { ZodError } from 'zod';
 import { generateInvitationEmail } from '@/lib/email-templates';
 import { sendEmail } from '@/lib/email';
+import { verifyAuth } from '@/middleware/auth';
 
 // Maximum number of invites per user (across all apps)
 const INVITE_LIMIT = 10;
@@ -109,22 +110,23 @@ export async function POST(
     validateEnv();
     
     const { id } = await params;
-    const authResult = await verifyAuth(request);
+    
+    // Use verifyMobileAuth instead of verifyAuth
+    const isAuthenticated = await verifyMobileAuth(request, id);
 
-    if ('error' in authResult) {
+    if (!isAuthenticated) {
       return NextResponse.json(
-        { success: false, message: authResult.error.message },
-        { status: authResult.error.status }
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
       );
     }
 
     try {
-      // First, verify the app belongs to the user
+      // Get the app details directly since we've already verified auth
       const { data: app, error: appError } = await supabaseAdmin
         .from('apps')
         .select('*')
         .eq('id', id)
-        .eq('user_id', authResult.user.id)
         .single();
 
       if (appError || !app) {
@@ -138,7 +140,7 @@ export async function POST(
       const { data: inviteUsage } = await supabaseAdmin
         .from('user_invite_usage')
         .select('total_invites')
-        .eq('user_id', authResult.user.id)
+        .eq('user_id', app.user_id)
         .single();
 
       const currentInvites = inviteUsage?.total_invites || 0;

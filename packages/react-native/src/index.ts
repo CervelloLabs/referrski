@@ -1,18 +1,20 @@
-import type { ReferrSkiConfig, SendInviteOptions, InvitationResponse, InvitationsResponse } from './types';
+import type { SendInviteOptions, InvitationResponse, InvitationsResponse } from './types';
 
 export class ReferrSki {
   private static instance: ReferrSki | null = null;
   private readonly appId: string;
   private readonly apiUrl: string = process.env.REFERRSKI_API_URL || 'https://api.referrski.com';
+  private readonly apiKey: string;
 
-  private constructor(appId: string) {
+  private constructor(appId: string, apiKey: string) {
     this.appId = appId;
     this.apiUrl = 'https://api.referrski.com';
+    this.apiKey = apiKey;
   }
 
-  public static configure(config: { appId: string }): void {
+  public static configure(config: { appId: string, apiKey: string }): void {
     if (!ReferrSki.instance) {
-      ReferrSki.instance = new ReferrSki(config.appId);
+      ReferrSki.instance = new ReferrSki(config.appId, config.apiKey);
     }
   }
 
@@ -29,12 +31,13 @@ export class ReferrSki {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${instance.apiKey}`,
       },
-      credentials: 'include',
       body: JSON.stringify(options),
     });
 
     if (!response.ok) {
+      console.error('Failed to create invitation', response.status, response.statusText);
       throw new Error('Failed to create invitation');
     }
 
@@ -45,7 +48,9 @@ export class ReferrSki {
     const instance = ReferrSki.getInstance();
     const response = await fetch(`${instance.apiUrl}/apps/${instance.appId}/invitations`, {
       method: 'GET',
-      credentials: 'include',
+      headers: {
+        'Authorization': `Bearer ${instance.apiKey}`,
+      },
     });
 
     if (!response.ok) {
@@ -61,7 +66,9 @@ export class ReferrSki {
       `${instance.apiUrl}/apps/${instance.appId}/inviters/${encodeURIComponent(inviterEmail)}`,
       {
         method: 'DELETE',
-        credentials: 'include',
+        headers: {
+          'Authorization': `Bearer ${instance.apiKey}`,
+        },
       }
     );
 

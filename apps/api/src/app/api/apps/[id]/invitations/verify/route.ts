@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { verifyAuth } from '@/middleware/auth';
+import { verifyMobileAuth } from '@/middleware/mobileAuth';
 import { verifyInvitationSchema } from '@/schemas/invitation';
 import type { InvitationResponse } from '@/types/invitation';
 import { ZodError } from 'zod';
@@ -11,22 +11,21 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const authResult = await verifyAuth(request);
+  const isAuthenticated = await verifyMobileAuth(request, id);
 
-  if ('error' in authResult) {
+  if (!isAuthenticated) {
     return NextResponse.json(
-      { success: false, message: authResult.error.message },
-      { status: authResult.error.status }
+      { success: false, message: "Unauthorized" },
+      { status: 401 }
     );
   }
 
   try {
-    // First, verify the app belongs to the user
+    // Get the app details directly since we've already verified auth
     const { data: app, error: appError } = await supabaseAdmin
       .from('apps')
       .select('*')
       .eq('id', id)
-      .eq('user_id', authResult.user.id)
       .single();
 
     if (appError || !app) {
