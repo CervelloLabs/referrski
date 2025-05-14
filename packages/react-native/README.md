@@ -14,42 +14,43 @@ pnpm add @referrski/react-native
 
 ## Configuration
 
-Before using the SDK, you need to configure it with your app ID:
+Before using the SDK, you need to configure it with your app ID and API key:
 
 ```typescript
 import { ReferrSki } from '@referrski/react-native';
 
 ReferrSki.configure({
-  appId: 'your-app-id'
+  appId: 'your-app-id',
+  apiKey: 'your-api-key'
 });
 ```
 
 ## Usage
 
-### Creating Invitations
+### Sending Invitations
 
-You can create invitations with or without email notifications:
+You can send invitations with or without email notifications:
 
 ```typescript
-// Create invitation without email notification
+// Send invitation without email notification
 try {
-  await ReferrSki.createInvitation({
+  await ReferrSki.sendInvite({
     inviteeIdentifier: 'friend@example.com',
-    inviterId: 'current-user@example.com',
+    inviterId: 'current-user-id',
     metadata: {
       inviterName: 'John Doe'
     }
   });
-  // Invitation created successfully
+  // Invitation sent successfully
 } catch (error) {
   // Handle error
 }
 
-// Create invitation with email notification
+// Send invitation with email notification
 try {
-  await ReferrSki.createInvitation({
+  await ReferrSki.sendInvite({
     inviteeIdentifier: 'friend@example.com',
-    inviterId: 'current-user@example.com',
+    inviterId: 'current-user-id',
     metadata: {
       inviterName: 'John Doe'
     },
@@ -59,45 +60,46 @@ try {
       content: 'Hey there! I think you\'d love using our app.'
     }
   });
-  // Invitation created and email sent successfully
+  // Invitation sent with email notification
 } catch (error) {
   // Handle error
 }
 ```
 
-### Verifying Invitations
+### Verifying Signups
 
-To verify if an identifier has a valid invitation:
+To verify if an identifier has a valid invitation during signup:
 
 ```typescript
 try {
-  await ReferrSki.verifyInvitation('friend@example.com');
-  // Invitation is valid
+  const result = await ReferrSki.verifySignup({
+    inviteeIdentifier: 'friend@example.com',
+    // Optional: provide specific invitation ID if known
+    // invitationId: 'invitation-id'
+  });
+  
+  if (result.verified) {
+    // User has a valid invitation
+  } else {
+    // No valid invitation found
+  }
 } catch (error) {
-  // Handle invalid or missing invitation
+  // Handle error
 }
 ```
 
 ### Deleting User Data (GDPR Compliance)
 
-To delete all invitations associated with a specific inviter (requires authentication):
+To delete all invitations associated with a specific inviter:
 
 ```typescript
 try {
   await ReferrSki.deleteInviterData('user@example.com');
   // All invitations from this user have been deleted
 } catch (error) {
-  if (error.message.includes('Unauthorized')) {
-    // Handle authentication error
-  } else if (error.message.includes('access denied')) {
-    // Handle permission error
-  } else {
-    // Handle other errors
-  }
+  // Handle error
 }
 ```
-
-Note: The user must be authenticated and have access to the app to delete data. This is typically used when a user requests their data to be deleted for GDPR compliance.
 
 ### Using the InviteModal Component
 
@@ -118,21 +120,26 @@ function MyComponent() {
       <InviteModal
         visible={visible}
         onClose={() => setVisible(false)}
-        inviterId="current-user@example.com"
+        inviterId="current-user-id"
         inviterName="John Doe"
         sendEmail={true} // Optional: set to false to disable email notifications
         onSuccess={() => {
-          console.log('Invitation created successfully');
-          setVisible(false);
+          console.log('Invitation sent successfully');
         }}
         style={{
           // Optional: Custom styles
-          container: { /* Modal container styles */ },
+          container: { /* Modal card styles */ },
+          overlay: { /* Modal overlay styles */ },
+          modalCard: { /* Modal card container styles */ },
           input: { /* Input field styles */ },
+          inputContainer: { /* Input container styles */ },
           button: { /* Submit button styles */ },
           buttonText: { /* Button text styles */ },
           title: { /* Title text styles */ },
-          error: { /* Error message styles */ }
+          description: { /* Description text styles */ },
+          error: { /* Error message styles */ },
+          closeButton: { /* Close button styles */ },
+          closeButtonText: { /* Close button text styles */ }
         }}
         texts={{
           // Optional: Custom texts
@@ -154,9 +161,7 @@ The SDK throws errors in the following cases:
 - When methods are called before configuration
 - When API requests fail
 - When invitations cannot be created or verified
-- When the user is not authenticated (for deletion operations)
 - When the user doesn't have permission to perform an operation
-- When email configuration is provided with an invalid email address
 
 ## API Reference
 
@@ -165,15 +170,16 @@ The SDK throws errors in the following cases:
 Configures the SDK with your application settings.
 
 Parameters:
-- `config`: ReferrSkiConfiguration
+- `config`: Object
   - `appId`: string - Your ReferrSki application ID
+  - `apiKey`: string - Your ReferrSki API key
 
-### ReferrSki.createInvitation(params)
+### ReferrSki.sendInvite(options)
 
-Creates a new invitation, optionally sending an email notification.
+Sends a new invitation, optionally with an email notification.
 
 Parameters:
-- `params`: CreateInvitationParams
+- `options`: SendInviteOptions
   - `inviteeIdentifier`: string - The identifier (e.g., email) of the person to invite
   - `inviterId`: string - The identifier of the person sending the invitation
   - `metadata?`: object - Optional metadata about the invitation
@@ -184,26 +190,29 @@ Parameters:
 
 Returns: Promise<InvitationResponse>
 
-### ReferrSki.verifyInvitation(inviteeIdentifier)
+### ReferrSki.verifySignup(options)
 
-Verifies if an invitation exists for the specified identifier.
+Verifies if an invitation exists for the specified identifier during signup.
 
 Parameters:
-- `inviteeIdentifier`: string - The identifier to verify
+- `options`: Object
+  - `inviteeIdentifier`: string - The identifier to verify
+  - `invitationId?`: string - Optional specific invitation ID to verify
 
-Returns: Promise<void>
+Returns: Promise<{ success: boolean; verified: boolean }>
 
-### ReferrSki.deleteInviterData(inviterId)
+### ReferrSki.deleteInviterData(inviterEmail)
 
 Deletes all invitations associated with a specific inviter for the current app.
-Requires authentication and app access.
 
 Parameters:
-- `inviterId`: string - The identifier whose invitations should be deleted
+- `inviterEmail`: string - The email/identifier whose invitations should be deleted
 
-Returns: Promise<void>
+Returns: Promise<{ success: boolean }>
 
 ### InviteModal Component
+
+A pre-built modal component for collecting and sending invitations.
 
 Props:
 - `visible`: boolean - Controls the visibility of the modal
@@ -213,4 +222,21 @@ Props:
 - `sendEmail?`: boolean - Whether to send email notifications (default: true)
 - `onSuccess?`: () => void - Optional callback when invitation is sent successfully
 - `style?`: Object - Optional styles for customizing the modal appearance
-- `texts?`: Object - Optional custom texts for the modal 
+  - `container?`: StyleProp<ViewStyle> - Modal card styles
+  - `overlay?`: StyleProp<ViewStyle> - Modal overlay styles
+  - `modalCard?`: StyleProp<ViewStyle> - Modal card container styles
+  - `input?`: StyleProp<TextStyle> - Input field styles
+  - `inputContainer?`: StyleProp<ViewStyle> - Input container styles
+  - `button?`: StyleProp<ViewStyle> - Submit button styles
+  - `buttonText?`: StyleProp<TextStyle> - Button text styles
+  - `title?`: StyleProp<TextStyle> - Title text styles
+  - `description?`: StyleProp<TextStyle> - Description text styles
+  - `error?`: StyleProp<TextStyle> - Error message styles
+  - `closeButton?`: StyleProp<ViewStyle> - Close button styles
+  - `closeButtonText?`: StyleProp<TextStyle> - Close button text styles
+- `texts?`: Object - Optional custom texts for the modal
+  - `title?`: string - Modal title
+  - `placeholder?`: string - Input placeholder
+  - `button?`: string - Button text
+  - `success?`: string - Success message
+  - `error?`: string - Error message 
