@@ -2,6 +2,10 @@
 
 The ReferrSki React Native SDK provides a simple way to implement referral and invitation functionality in your React Native applications, with optional email-based notifications.
 
+## Getting Started
+
+Before implementing the SDK, please sign up at [www.referrski.com](https://www.referrski.com) to create an account and obtain your app ID and API key.
+
 ## Installation
 
 ```bash
@@ -14,7 +18,7 @@ pnpm add @referrski/react-native
 
 ## Configuration
 
-Before using the SDK, you need to configure it with your app ID and API key:
+After signing up at [www.referrski.com](https://www.referrski.com), configure the SDK with your app ID and API key (auth header):
 
 ```typescript
 import { ReferrSki } from '@referrski/react-native';
