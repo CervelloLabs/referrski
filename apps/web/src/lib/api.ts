@@ -3,16 +3,36 @@ interface FetchOptions extends RequestInit {
   body?: any;
 }
 
-// Store the session token in memory
+// Use localStorage to persist the session token
 let sessionToken: string | null = null;
+
+// Initialize the session token from localStorage if available
+if (typeof window !== 'undefined') {
+  sessionToken = localStorage.getItem('sessionToken');
+}
 
 export { sessionToken };
 
 export function setSessionToken(token: string | null) {
   sessionToken = token;
+  if (typeof window !== 'undefined') {
+    if (token) {
+      localStorage.setItem('sessionToken', token);
+    } else {
+      localStorage.removeItem('sessionToken');
+    }
+  }
 }
 
 export async function fetchApi(endpoint: string, options: FetchOptions = {}) {
+  // Get the latest token from localStorage if in browser
+  if (typeof window !== 'undefined') {
+    const storedToken = localStorage.getItem('sessionToken');
+    if (storedToken && !sessionToken) {
+      sessionToken = storedToken;
+    }
+  }
+
   if (!sessionToken && !endpoint.includes('/auth/')) {
     throw new Error('Not authenticated');
   }

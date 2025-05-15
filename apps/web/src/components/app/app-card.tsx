@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Settings, Info, Code, BarChart } from 'lucide-react';
+import { Settings, Info, Code, BarChart, Webhook } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -135,6 +135,15 @@ export function AppCard({ app, onUpdate }: AppCardProps) {
               className="h-8 w-8"
             >
               <BarChart className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => router.push(`/dashboard/apps/${app.id}/webhooks`)}
+              title="Test Webhooks"
+              className="h-8 w-8"
+            >
+              <Webhook className="h-4 w-4" />
             </Button>
             <Button
               variant="ghost"
