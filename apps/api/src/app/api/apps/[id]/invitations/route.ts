@@ -8,6 +8,8 @@ import { ZodError } from 'zod';
 import { generateInvitationEmail } from '@/lib/email-templates';
 import { sendEmail } from '@/lib/email';
 import { verifyAuth } from '@/middleware/auth';
+import { sendWebhook } from '@/lib/webhook';
+import { WebhookPayload } from '@/types/webhook';
 
 // Maximum number of invites per user (across all apps)
 const INVITE_LIMIT = 10;
@@ -221,29 +223,19 @@ export async function POST(
       // Send webhook notification if configured
       if (app.webhook_url) {
         try {
-          const headers: Record<string, string> = {
-            'Content-Type': 'application/json',
+          const webhookPayload: WebhookPayload = {
+            type: 'invitation.created',
+            data: {
+              id: invitation.id,
+              inviterId: invitation.inviter_id,
+              inviteeIdentifier: invitation.invitee_identifier,
+              status: invitation.status,
+              metadata: invitation.metadata,
+              createdAt: invitation.created_at,
+            },
           };
           
-          if (app.auth_header) {
-            headers['Authorization'] = app.auth_header;
-          }
-
-          await fetch(app.webhook_url, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({
-              type: 'invitation.created',
-              data: {
-                id: invitation.id,
-                inviterId: invitation.inviter_id,
-                inviteeIdentifier: invitation.invitee_identifier,
-                status: invitation.status,
-                metadata: invitation.metadata,
-                createdAt: invitation.created_at,
-              },
-            }),
-          });
+          await sendWebhook(app.webhook_url, app.auth_header, webhookPayload);
         } catch (webhookError) {
           console.error('Webhook notification failed:', webhookError);
           // Don't fail the request if webhook fails

@@ -3,6 +3,8 @@ import { verifyAuth } from '@/middleware/auth';
 import { supabaseAdmin } from '@/lib/supabase';
 import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
+import { sendWebhook } from '@/lib/webhook';
+import { WebhookPayload } from '@/types/webhook';
 
 const testCreateWebhookSchema = z.object({
   type: z.literal('create'),
@@ -73,7 +75,7 @@ export async function POST(
       const now = new Date().toISOString();
       
       payload = {
-        type: 'invitation.created',
+        type: 'invitation.created' as const,
         data: {
           id: invitationId,
           inviterId: validatedData.inviterId,
@@ -90,7 +92,7 @@ export async function POST(
       const now = new Date().toISOString();
       
       payload = {
-        type: 'invitation.completed',
+        type: 'invitation.completed' as const,
         data: {
           id: validatedData.invitationId || uuidv4(),
           inviteeIdentifier: validatedData.inviteeIdentifier,
@@ -103,20 +105,10 @@ export async function POST(
     }
 
     // Send the webhook
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-    
-    if (app.auth_header) {
-      headers['Authorization'] = app.auth_header;
-    }
-
     try {
-      const webhookResponse = await fetch(app.webhook_url, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(payload),
-      });
+      const webhookPayload: WebhookPayload = payload;
+      
+      const webhookResponse = await sendWebhook(app.webhook_url, app.auth_header, webhookPayload);
       
       const statusCode = webhookResponse.status;
       let responseBody;

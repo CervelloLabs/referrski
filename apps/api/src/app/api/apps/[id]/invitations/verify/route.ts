@@ -5,6 +5,8 @@ import { verifyMobileAuth } from '@/middleware/mobileAuth';
 import { verifyInvitationSchema } from '@/schemas/invitation';
 import type { InvitationResponse } from '@/types/invitation';
 import { ZodError } from 'zod';
+import { sendWebhook } from '@/lib/webhook';
+import { WebhookPayload } from '@/types/webhook';
 
 export async function POST(
   request: NextRequest,
@@ -79,30 +81,20 @@ export async function POST(
     // Send webhook notification if configured
     if (app.webhook_url) {
       try {
-        const headers: Record<string, string> = {
-          'Content-Type': 'application/json',
+        const webhookPayload: WebhookPayload = {
+          type: 'invitation.completed',
+          data: {
+            id: updatedInvitation.id,
+            inviterId: updatedInvitation.inviter_id,
+            inviteeIdentifier: updatedInvitation.invitee_identifier,
+            status: updatedInvitation.status,
+            metadata: updatedInvitation.metadata,
+            createdAt: updatedInvitation.created_at,
+            completedAt: updatedInvitation.completed_at,
+          },
         };
         
-        if (app.auth_header) {
-          headers['Authorization'] = app.auth_header;
-        }
-
-        await fetch(app.webhook_url, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            type: 'invitation.completed',
-            data: {
-              id: updatedInvitation.id,
-              inviterId: updatedInvitation.inviter_id,
-              inviteeIdentifier: updatedInvitation.invitee_identifier,
-              status: updatedInvitation.status,
-              metadata: updatedInvitation.metadata,
-              createdAt: updatedInvitation.created_at,
-              completedAt: updatedInvitation.completed_at,
-            },
-          }),
-        });
+        await sendWebhook(app.webhook_url, app.auth_header, webhookPayload);
       } catch (webhookError) {
         console.error('Webhook notification failed:', webhookError);
         // Don't fail the request if webhook fails
