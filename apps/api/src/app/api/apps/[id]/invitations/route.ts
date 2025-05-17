@@ -8,8 +8,8 @@ import { ZodError } from 'zod';
 import { generateInvitationEmail } from '@/lib/email-templates';
 import { sendEmail } from '@/lib/email';
 import { verifyAuth } from '@/middleware/auth';
-import { sendWebhook } from '@/lib/webhook';
-import { WebhookPayload } from '@/types/webhook';
+import { sendWebhook } from '../../../../../lib/webhook';
+import { WebhookPayload } from '../../../../../types/webhook';
 
 // Maximum number of invites per user (across all apps)
 const INVITE_LIMIT = 10;
@@ -226,7 +226,8 @@ export async function POST(
           const webhookPayload: WebhookPayload = {
             type: 'invitation.created',
             data: {
-              id: invitation.id,
+              invitationId: invitation.id,
+              appId: invitation.app_id,
               inviterId: invitation.inviter_id,
               inviteeIdentifier: invitation.invitee_identifier,
               status: invitation.status,

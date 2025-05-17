@@ -5,8 +5,8 @@ import { verifyMobileAuth } from '@/middleware/mobileAuth';
 import { verifyInvitationSchema } from '@/schemas/invitation';
 import type { InvitationResponse } from '@/types/invitation';
 import { ZodError } from 'zod';
-import { sendWebhook } from '@/lib/webhook';
-import { WebhookPayload } from '@/types/webhook';
+import { sendWebhook } from '../../../../../../lib/webhook';
+import { WebhookPayload } from '../../../../../../types/webhook';
 
 export async function POST(
   request: NextRequest,
@@ -84,7 +84,8 @@ export async function POST(
         const webhookPayload: WebhookPayload = {
           type: 'invitation.completed',
           data: {
-            id: updatedInvitation.id,
+            invitationId: updatedInvitation.id,
+            appId: updatedInvitation.app_id,
             inviterId: updatedInvitation.inviter_id,
             inviteeIdentifier: updatedInvitation.invitee_identifier,
             status: updatedInvitation.status,
