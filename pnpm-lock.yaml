@@ -48,6 +48,9 @@ importers:
       resend:
         specifier: ^4.5.1
         version: 4.5.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      stripe:
+        specifier: ^18.1.0
+        version: 18.1.0(@types/node@20.17.46)
       uuid:
         specifier: ^11.1.0
         version: 11.1.0
@@ -103,6 +106,9 @@ importers:
       '@radix-ui/react-toast':
         specifier: ^1.1.5
         version: 1.2.13(@types/react-dom@19.1.5(@types/react@19.1.4))(@types/react@19.1.4)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@stripe/stripe-js':
+        specifier: ^7.3.0
+        version: 7.3.0
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -124,6 +130,9 @@ importers:
       react-hook-form:
         specifier: ^7.56.2
         version: 7.56.3(react@19.1.0)
+      stripe:
+        specifier: ^18.1.0
+        version: 18.1.0(@types/node@20.17.46)
       tailwind-merge:
         specifier: ^3.2.0
         version: 3.3.0
@@ -1681,6 +1690,10 @@ packages:
 
   '@standard-schema/utils@0.3.0':
     resolution: {integrity: sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g==}
+
+  '@stripe/stripe-js@7.3.0':
+    resolution: {integrity: sha512-xnCyFIEI5SQnQrKkCxVj7nS5fWTZap+zuIGzmmxLMdlmgahFJaihK4zogqE8YyKKTLtrp/EldkEijSgtXsRVDg==}
+    engines: {node: '>=12.16'}
 
   '@supabase/auth-js@2.69.1':
     resolution: {integrity: sha512-FILtt5WjCNzmReeRLq5wRs3iShwmnWgBvxHfqapC/VoljJl+W8hDAyFmf1NVw3zH+ZjZ05AKxiKxVeb0HNWRMQ==}
@@ -4823,6 +4836,15 @@ packages:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
     engines: {node: '>=8'}
 
+  stripe@18.1.0:
+    resolution: {integrity: sha512-MLDiniPTHqcfIT3anyBPmOEcaiDhYa7/jRaNypQ3Rt2SJnayQZBvVbFghIziUCZdltGAndm/ZxVOSw6uuSCDig==}
+    engines: {node: '>=12.*'}
+    peerDependencies:
+      '@types/node': '>=12.x.x'
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+
   styled-jsx@5.1.6:
     resolution: {integrity: sha512-qSVyDTeMotdvQYoHWLNGwRFJHC+i+ZvdBRYosOFgC+Wg1vx4frN2/RG/NA7SYqqvKNLf39P2LSRA2pu6n0XYZA==}
     engines: {node: '>= 12.0.0'}
@@ -7014,6 +7036,8 @@ snapshots:
       '@sinonjs/commons': 3.0.1
 
   '@standard-schema/utils@0.3.0': {}
+
+  '@stripe/stripe-js@7.3.0': {}
 
   '@supabase/auth-js@2.69.1':
     dependencies:
@@ -11074,6 +11098,12 @@ snapshots:
       min-indent: 1.0.1
 
   strip-json-comments@3.1.1: {}
+
+  stripe@18.1.0(@types/node@20.17.46):
+    dependencies:
+      qs: 6.14.0
+    optionalDependencies:
+      '@types/node': 20.17.46
 
   styled-jsx@5.1.6(react@19.1.0):
     dependencies:

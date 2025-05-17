@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { AuthDialog } from '@/components/auth/auth-dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, Users, ChartBar, Zap } from 'lucide-react';
+import { ArrowRight, Users, ChartBar, Zap, Check } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -93,6 +93,151 @@ export default function Home() {
                   real-time. Never miss a conversion.
                 </CardContent>
               </Card>
+            </div>
+          </div>
+        </section>
+
+        {/* Pricing Section */}
+        <section id="pricing" className="py-20">
+          <div className="container">
+            <h2 className="text-3xl font-bold text-center mb-4">
+              Simple, Transparent Pricing
+            </h2>
+            <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+              Choose the plan that's right for your business. All plans include full access to our API and dashboard.
+            </p>
+            
+            <div className="grid md:grid-cols-3 gap-8">
+              {/* Free Tier */}
+              <Card className="border-2 border-slate-200">
+                <CardHeader>
+                  <CardTitle>Free</CardTitle>
+                  <div className="mt-4 flex items-baseline text-slate-900">
+                    <span className="text-4xl font-bold tracking-tight">$0</span>
+                    <span className="ml-1 text-sm text-muted-foreground">/month</span>
+                  </div>
+                  <CardDescription className="mt-4">
+                    Perfect for getting started with user referrals
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3">
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
+                      <span>100 invites per month</span>
+                    </li>
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
+                      <span>Dashboard access</span>
+                    </li>
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
+                      <span>Basic analytics</span>
+                    </li>
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
+                      <span>API access</span>
+                    </li>
+                  </ul>
+                  <Button className="w-full mt-8" variant="outline">
+                    <AuthDialog
+                      defaultMode="sign-up"
+                      trigger={<span>Get Started</span>}
+                    />
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Pro Tier */}
+              <Card className="border-2 border-primary relative">
+                <div className="absolute top-0 right-0 transform translate-x-1/3 -translate-y-1/2 bg-primary text-white text-xs font-semibold py-1 px-3 rounded-full">
+                  Popular
+                </div>
+                <CardHeader>
+                  <CardTitle>Pro</CardTitle>
+                  <div className="mt-4 flex items-baseline text-slate-900">
+                    <span className="text-4xl font-bold tracking-tight">$9</span>
+                    <span className="ml-1 text-sm text-muted-foreground">/month</span>
+                  </div>
+                  <CardDescription className="mt-4">
+                    For growing businesses with more traffic
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3">
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
+                      <span>10,000 invites per month</span>
+                    </li>
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
+                      <span>Advanced analytics</span>
+                    </li>
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
+                      <span>Webhook integrations</span>
+                    </li>
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
+                      <span>Email support</span>
+                    </li>
+                  </ul>
+                  <Button className="w-full mt-8">
+                    <AuthDialog
+                      defaultMode="sign-up"
+                      trigger={<span>Subscribe Now</span>}
+                    />
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Business Tier */}
+              <Card className="border-2 border-slate-200">
+                <CardHeader>
+                  <CardTitle>Business</CardTitle>
+                  <div className="mt-4 flex items-baseline text-slate-900">
+                    <span className="text-4xl font-bold tracking-tight">$29</span>
+                    <span className="ml-1 text-sm text-muted-foreground">/month</span>
+                  </div>
+                  <CardDescription className="mt-4">
+                    For larger businesses with high volume needs
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3">
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
+                      <span>100,000 invites per month</span>
+                    </li>
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
+                      <span>Premium analytics</span>
+                    </li>
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
+                      <span>Custom webhooks</span>
+                    </li>
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
+                      <span>Priority support</span>
+                    </li>
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
+                      <span>Custom branding</span>
+                    </li>
+                  </ul>
+                  <Button className="w-full mt-8" variant="outline">
+                    <AuthDialog
+                      defaultMode="sign-up"
+                      trigger={<span>Contact Sales</span>}
+                    />
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="mt-12 text-center text-muted-foreground">
+              <p>Need more? <a href="#contact" className="text-primary hover:underline">Contact us</a> for custom enterprise pricing.</p>
             </div>
           </div>
         </section>
