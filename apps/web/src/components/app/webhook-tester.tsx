@@ -9,8 +9,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { WebhookPayload } from '@/types/webhook';
-import { sendWebhook } from '@/lib/webhook';
-import { v4 as uuidv4 } from 'uuid';
+import { fetchApi } from '@/lib/api';
 
 interface WebhookTesterProps {
   appId: string;
@@ -63,50 +62,33 @@ export function WebhookTester({ appId, webhookUrl, authHeader }: WebhookTesterPr
         return;
       }
 
-      // Create the invitation payload
-      const invitationId = uuidv4();
-      const now = new Date().toISOString();
-      
-      const payload: WebhookPayload = {
-        type: 'invitation.created',
-        data: {
-          invitationId: invitationId,
-          appId: appId,
-          inviterId: inviterId,
-          inviteeIdentifier: inviteeIdentifier,
-          status: 'pending',
-          metadata: parsedMetadata,
-          createdAt: now,
-        },
-      };
-
-      // Send the webhook directly
+      // Send via API to avoid CORS issues
       const startTime = performance.now();
-      const webhookResponse = await sendWebhook(webhookUrl, authHeader, payload);
+      const response = await fetchApi(`/api/apps/${appId}/webhooks/test`, {
+        method: 'POST',
+        body: {
+          type: 'create',
+          inviterId,
+          inviteeIdentifier,
+          metadata: parsedMetadata,
+        },
+      });
       const endTime = performance.now();
       const responseTime = Math.round(endTime - startTime);
       
-      // Parse response body
-      let responseBody = '';
-      try {
-        responseBody = await webhookResponse.text();
-      } catch (e) {
-        responseBody = 'Could not parse response body';
-      }
-
       setResult({
-        success: webhookResponse.ok,
-        message: webhookResponse.ok 
-          ? 'Test webhook sent successfully!' 
-          : `Webhook request failed with status: ${webhookResponse.status}`,
-        payload,
-        responseStatus: webhookResponse.status,
-        responseBody,
+        success: response.success,
+        message: response.message || 'Test webhook sent successfully!',
+        payload: response.data.payload,
+        responseStatus: response.data.webhookResponse.status,
+        responseBody: response.data.webhookResponse.body,
         responseTime,
       });
 
       // Save the invitation ID for verify testing
-      setInvitationId(invitationId);
+      if (response.data.payload.data.invitationId) {
+        setInvitationId(response.data.payload.data.invitationId);
+      }
     } catch (error) {
       console.error('Error sending test webhook:', error);
       setResult({
@@ -132,46 +114,25 @@ export function WebhookTester({ appId, webhookUrl, authHeader }: WebhookTesterPr
     setResult(null);
 
     try {
-      // Create a completion payload
-      const now = new Date().toISOString();
-      const currentInvitationId = invitationId || uuidv4();
-      
-      const payload: WebhookPayload = {
-        type: 'invitation.completed',
-        data: {
-          invitationId: currentInvitationId,
-          appId: appId,
-          inviterId: 'test-system',
-          inviteeIdentifier: inviteeIdentifier,
-          status: 'completed',
-          metadata: {},
-          createdAt: new Date(new Date().getTime() - 3600000).toISOString(), // 1 hour ago
-          completedAt: now,
-        },
-      };
-
-      // Send the webhook directly
+      // Send via API to avoid CORS issues
       const startTime = performance.now();
-      const webhookResponse = await sendWebhook(webhookUrl, authHeader, payload);
+      const response = await fetchApi(`/api/apps/${appId}/webhooks/test`, {
+        method: 'POST',
+        body: {
+          type: 'verify',
+          inviteeIdentifier,
+          invitationId: invitationId || undefined,
+        },
+      });
       const endTime = performance.now();
       const responseTime = Math.round(endTime - startTime);
       
-      // Parse response body
-      let responseBody = '';
-      try {
-        responseBody = await webhookResponse.text();
-      } catch (e) {
-        responseBody = 'Could not parse response body';
-      }
-
       setResult({
-        success: webhookResponse.ok,
-        message: webhookResponse.ok 
-          ? 'Test verification webhook sent successfully!' 
-          : `Webhook request failed with status: ${webhookResponse.status}`,
-        payload,
-        responseStatus: webhookResponse.status,
-        responseBody,
+        success: response.success,
+        message: response.message || 'Test verification webhook sent successfully!',
+        payload: response.data.payload,
+        responseStatus: response.data.webhookResponse.status,
+        responseBody: response.data.webhookResponse.body,
         responseTime,
       });
     } catch (error) {
