@@ -1,4 +1,4 @@
-import { WebhookPayload } from "../types/webhook";
+import { WebhookPayload } from "@/types/webhook";
 
 /**
  * Sends a webhook notification to the specified URL

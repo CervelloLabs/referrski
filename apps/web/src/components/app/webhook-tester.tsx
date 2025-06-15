@@ -6,9 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '../ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
-import { fetchApi } from '@/lib/api';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { WebhookPayload } from '@/types/webhook';
+import { fetchApi } from '@/lib/api';
 
 interface WebhookTesterProps {
   appId: string;
@@ -26,7 +27,10 @@ export function WebhookTester({ appId, webhookUrl, authHeader }: WebhookTesterPr
   const [result, setResult] = useState<{
     success: boolean;
     message: string;
-    payload?: any;
+    payload?: WebhookPayload;
+    responseStatus?: number;
+    responseBody?: string;
+    responseTime?: number;
   } | null>(null);
   
   const { toast } = useToast();
@@ -58,6 +62,8 @@ export function WebhookTester({ appId, webhookUrl, authHeader }: WebhookTesterPr
         return;
       }
 
+      // Send via API to avoid CORS issues
+      const startTime = performance.now();
       const response = await fetchApi(`/api/apps/${appId}/webhooks/test`, {
         method: 'POST',
         body: {
@@ -67,16 +73,21 @@ export function WebhookTester({ appId, webhookUrl, authHeader }: WebhookTesterPr
           metadata: parsedMetadata,
         },
       });
-
+      const endTime = performance.now();
+      const responseTime = Math.round(endTime - startTime);
+      
       setResult({
-        success: true,
-        message: 'Test webhook sent successfully!',
+        success: response.success,
+        message: response.message || 'Test webhook sent successfully!',
         payload: response.data.payload,
+        responseStatus: response.data.webhookResponse.status,
+        responseBody: response.data.webhookResponse.body,
+        responseTime,
       });
 
       // Save the invitation ID for verify testing
-      if (response.data.payload?.data?.id) {
-        setInvitationId(response.data.payload.data.id);
+      if (response.data.payload.data.invitationId) {
+        setInvitationId(response.data.payload.data.invitationId);
       }
     } catch (error) {
       console.error('Error sending test webhook:', error);
@@ -103,6 +114,8 @@ export function WebhookTester({ appId, webhookUrl, authHeader }: WebhookTesterPr
     setResult(null);
 
     try {
+      // Send via API to avoid CORS issues
+      const startTime = performance.now();
       const response = await fetchApi(`/api/apps/${appId}/webhooks/test`, {
         method: 'POST',
         body: {
@@ -111,11 +124,16 @@ export function WebhookTester({ appId, webhookUrl, authHeader }: WebhookTesterPr
           invitationId: invitationId || undefined,
         },
       });
-
+      const endTime = performance.now();
+      const responseTime = Math.round(endTime - startTime);
+      
       setResult({
-        success: true,
-        message: 'Test verification webhook sent successfully!',
+        success: response.success,
+        message: response.message || 'Test verification webhook sent successfully!',
         payload: response.data.payload,
+        responseStatus: response.data.webhookResponse.status,
+        responseBody: response.data.webhookResponse.body,
+        responseTime,
       });
     } catch (error) {
       console.error('Error sending test webhook:', error);
@@ -259,14 +277,69 @@ export function WebhookTester({ appId, webhookUrl, authHeader }: WebhookTesterPr
                   <AlertDescription>{result.message}</AlertDescription>
                 </Alert>
                 
-                {result.success && result.payload && (
-                  <div className="mt-4">
-                    <Label>Webhook Payload</Label>
-                    <div className="p-4 bg-muted rounded-md mt-2">
-                      <pre className="text-xs overflow-auto whitespace-pre-wrap">
-                        {JSON.stringify(result.payload, null, 2)}
-                      </pre>
+                {result.payload && (
+                  <div className="mt-4 grid gap-4">
+                    <div>
+                      <Label>Webhook Payload</Label>
+                      <div className="p-4 bg-muted rounded-md mt-2">
+                        <pre className="text-xs overflow-auto whitespace-pre-wrap">
+                          {JSON.stringify(result.payload, null, 2)}
+                        </pre>
+                      </div>
                     </div>
+                    
+                    <div className="grid gap-2">
+                      <Label>Event Type</Label>
+                      <div className="p-2 bg-muted rounded-md">
+                        <code className="text-xs">{result.payload.type}</code>
+                      </div>
+                      
+                      <Label>Event Data</Label>
+                      <div className="p-2 bg-muted rounded-md">
+                        <pre className="text-xs overflow-auto whitespace-pre-wrap">
+                          {JSON.stringify(result.payload.data, null, 2)}
+                        </pre>
+                      </div>
+                    </div>
+                    
+                    {result.responseStatus && (
+                      <div className="grid gap-2">
+                        <Label>Response Status</Label>
+                        <div className="p-2 bg-muted rounded-md">
+                          <code className={`text-xs ${
+                            result.responseStatus >= 200 && result.responseStatus < 300 
+                              ? 'text-green-500' 
+                              : result.responseStatus >= 400 
+                                ? 'text-red-500' 
+                                : 'text-yellow-500'
+                          }`}>
+                            {result.responseStatus}
+                          </code>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {result.responseTime && (
+                      <div className="grid gap-2">
+                        <Label>Response Time</Label>
+                        <div className="p-2 bg-muted rounded-md">
+                          <code className="text-xs">
+                            {result.responseTime}ms
+                          </code>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {result.responseBody && (
+                      <div className="grid gap-2">
+                        <Label>Response Body</Label>
+                        <div className="p-2 bg-muted rounded-md">
+                          <pre className="text-xs overflow-auto whitespace-pre-wrap">
+                            {result.responseBody}
+                          </pre>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

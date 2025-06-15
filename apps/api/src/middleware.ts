@@ -12,7 +12,7 @@ export async function middleware(request: NextRequest) {
     'https://referrski.com',             // New custom domain (apex)
     process.env.NEXT_PUBLIC_APP_URL,     // Dynamic origin from env (e.g., for localhost)
     // Add localhost:3000 for development mode
-    process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : null,
+    process.env.NODE_ENV === 'development' ? 'http://localhost:3003' : null,
   ].filter((origin): origin is string => typeof origin === 'string');
 
   const requestOrigin = request.headers.get('origin');

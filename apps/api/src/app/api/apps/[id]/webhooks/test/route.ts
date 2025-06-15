@@ -77,10 +77,11 @@ export async function POST(
       payload = {
         type: 'invitation.created' as const,
         data: {
-          id: invitationId,
+          invitationId: invitationId,
+          appId: id,
           inviterId: validatedData.inviterId,
           inviteeIdentifier: validatedData.inviteeIdentifier,
-          status: 'pending',
+          status: 'pending' as const,
           metadata: validatedData.metadata || {},
           createdAt: now,
         },
@@ -90,13 +91,18 @@ export async function POST(
     } else {
       // Create a test verification payload
       const now = new Date().toISOString();
+      const invitationId = validatedData.invitationId || uuidv4();
       
       payload = {
         type: 'invitation.completed' as const,
         data: {
-          id: validatedData.invitationId || uuidv4(),
+          invitationId: invitationId,
+          appId: id,
+          inviterId: 'test-system',
           inviteeIdentifier: validatedData.inviteeIdentifier,
-          status: 'completed',
+          status: 'completed' as const,
+          metadata: {},
+          createdAt: new Date(new Date().getTime() - 3600000).toISOString(), // 1 hour ago
           completedAt: now,
         },
       };
@@ -151,4 +157,4 @@ export async function POST(
       { status: 400 }
     );
   }
-} 
+}
