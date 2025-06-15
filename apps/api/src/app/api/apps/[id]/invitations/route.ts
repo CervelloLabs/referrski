@@ -160,21 +160,6 @@ export async function POST(
       const body = await request.json();
       const validatedData = createInvitationSchema.parse(body);
 
-      // Validate email format if email sending is requested
-      if (validatedData.email && !validatedData.inviteeIdentifier.includes('@')) {
-        return NextResponse.json(
-          { 
-            success: false, 
-            message: 'Invalid email address',
-            errors: [{
-              field: 'inviteeIdentifier',
-              message: 'Must be a valid email address when email sending is enabled'
-            }]
-          },
-          { status: 400 }
-        );
-      }
-
       // Create the invitation
       const { data: invitation, error } = await supabaseAdmin
         .from('invitations')

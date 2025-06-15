@@ -1,8 +1,14 @@
 import { z } from 'zod';
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export const createInvitationSchema = z.object({
   inviterId: z.string().min(1, 'Inviter ID is required'),
-  inviteeIdentifier: z.string().min(1, 'Invitee identifier is required'),
+  inviteeIdentifier: z.string()
+    .min(1, 'Invitee identifier is required')
+    .refine((val) => emailRegex.test(val), {
+      message: 'Invalid email address format',
+    }),
   metadata: z.record(z.any()).optional(),
   email: z.object({
     fromName: z.string().min(1, 'From name is required for email'),
@@ -12,7 +18,11 @@ export const createInvitationSchema = z.object({
 });
 
 export const verifyInvitationSchema = z.object({
-  inviteeIdentifier: z.string().min(1, 'Invitee identifier is required'),
+  inviteeIdentifier: z.string()
+    .min(1, 'Invitee identifier is required')
+    .refine((val) => emailRegex.test(val), {
+      message: 'Invalid email address format',
+    }),
   invitationId: z.string().optional(),
 });
 

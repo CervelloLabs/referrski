@@ -23,6 +23,7 @@ export interface InviteModalProps extends PropsWithChildren<any> {
   inviterId: string;
   inviterName: string;
   sendEmail?: boolean;
+  successMessage?: string;
   style?: {
     container?: StyleProp<ViewStyle>;
     input?: StyleProp<TextStyle>;
@@ -36,6 +37,10 @@ export interface InviteModalProps extends PropsWithChildren<any> {
     modalCard?: StyleProp<ViewStyle>;
     description?: StyleProp<TextStyle>;
     inputContainer?: StyleProp<ViewStyle>;
+    successContainer?: StyleProp<ViewStyle>;
+    successText?: StyleProp<TextStyle>;
+    successIcon?: StyleProp<TextStyle>;
+    fromInput?: StyleProp<TextStyle>;
   };
   texts?: {
     title?: string;
@@ -43,6 +48,7 @@ export interface InviteModalProps extends PropsWithChildren<any> {
     button?: string;
     success?: string;
     error?: string;
+    fromPlaceholder?: string;
   };
 }
 
@@ -53,16 +59,34 @@ export function InviteModal({
   inviterId,
   inviterName,
   sendEmail = true,
+  successMessage = 'Invitation sent successfully!',
   style = {},
   texts = {},
 }: InviteModalProps): JSX.Element {
   const [inviteeIdentifier, setInviteeIdentifier] = useState('');
+  const [fromName, setFromName] = useState(inviterName);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
   const handleInvite = async () => {
     if (!inviteeIdentifier.trim()) {
-      setError('Please enter an identifier');
+      setError('Please enter an email address');
+      return;
+    }
+
+    if (!validateEmail(inviteeIdentifier.trim())) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    if (!fromName.trim()) {
+      setError('Please enter your name');
       return;
     }
 
@@ -74,24 +98,103 @@ export function InviteModal({
         inviteeIdentifier: inviteeIdentifier.trim(),
         inviterId,
         metadata: {
-          inviterName
+          inviterName: fromName.trim()
         },
         ...(sendEmail && {
           email: {
-            fromName: inviterName,
-            subject: 'Join our app!',
-            content: 'Hey there! I think you\'d love using our app.'
+            fromName: fromName.trim(),
+            subject: `${fromName.trim()} would like you to join our app!`,
+            content: `Hey there! ${fromName.trim()} thinks you'd love using our app. Join us and discover all the amazing features we have to offer!`
           }
         })
       });
       setInviteeIdentifier('');
+      setIsSuccess(true);
       onSuccess?.();
-      onClose();
-    } catch (err) {
-      setError('Failed to send invitation. Please try again.');
+      
+      // Close modal after 2 seconds on success
+      setTimeout(() => {
+        setIsSuccess(false);
+        onClose();
+      }, 2000);
+    } catch (err: any) {
+      // Handle specific error cases
+      if (err.message?.includes('invite limit')) {
+        setError('You cannot invite people right now, try again later.');
+      } else {
+        setError('Something went wrong, try again later.');
+      }
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const renderContent = () => {
+    if (isSuccess) {
+      return (
+        <View style={[styles.successContainer, style.successContainer]}>
+          <Text style={[styles.successIcon, style.successIcon]}>✓</Text>
+          <Text style={[styles.successText, style.successText]}>
+            {successMessage}
+          </Text>
+        </View>
+      );
+    }
+
+    return (
+      <>
+        <Text style={[styles.title, style.title]}>
+          {texts.title || 'Invite Friends'}
+        </Text>
+        <Text style={styles.description}>
+          Share this app with your friends and family
+        </Text>
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={[styles.input, style.input]}
+            placeholder={texts.fromPlaceholder || 'Your name'}
+            placeholderTextColor="#9ca3af"
+            value={fromName}
+            onChangeText={setFromName}
+            autoCapitalize="words"
+          />
+        </View>
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={[styles.input, style.input]}
+            placeholder={texts.placeholder || 'Enter friend\'s email'}
+            placeholderTextColor="#9ca3af"
+            value={inviteeIdentifier}
+            onChangeText={(text) => {
+              setInviteeIdentifier(text);
+              setError(null); // Clear error when user types
+            }}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            autoComplete="email"
+            textContentType="emailAddress"
+          />
+        </View>
+        {error && (
+          <Text style={[styles.error, style.error]}>
+            {error}
+          </Text>
+        )}
+        <TouchableOpacity
+          style={[styles.button, isLoading && styles.buttonDisabled, style.button]}
+          onPress={handleInvite}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator color="#fff" size="small" />
+          ) : (
+            <Text style={[styles.buttonText, style.buttonText]}>
+              {texts.button || 'Send Invitation'}
+            </Text>
+          )}
+        </TouchableOpacity>
+      </>
+    );
   };
 
   return (
@@ -109,41 +212,7 @@ export function InviteModal({
           >
             <Text style={[styles.closeButtonText, style.closeButtonText]}>✕</Text>
           </TouchableOpacity>
-          <Text style={[styles.title, style.title]}>
-            {texts.title || 'Invite Friends'}
-          </Text>
-          <Text style={styles.description}>
-            Share this app with your friends and family
-          </Text>
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={[styles.input, style.input]}
-              placeholder={texts.placeholder || 'Enter friend\'s email or identifier'}
-              placeholderTextColor="#9ca3af"
-              value={inviteeIdentifier}
-              onChangeText={setInviteeIdentifier}
-              autoCapitalize="none"
-              keyboardType="email-address"
-            />
-          </View>
-          {error && (
-            <Text style={[styles.error, style.error]}>
-              {error}
-            </Text>
-          )}
-          <TouchableOpacity
-            style={[styles.button, isLoading && styles.buttonDisabled, style.button]}
-            onPress={handleInvite}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <ActivityIndicator color="#fff" size="small" />
-            ) : (
-              <Text style={[styles.buttonText, style.buttonText]}>
-                {texts.button || 'Send Invitation'}
-              </Text>
-            )}
-          </TouchableOpacity>
+          {renderContent()}
         </View>
       </View>
     </Modal>
@@ -237,6 +306,22 @@ const styles = StyleSheet.create({
   closeButtonText: {
     fontSize: 20,
     color: '#9ca3af',
+    fontWeight: '500',
+  },
+  successContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  successIcon: {
+    fontSize: 48,
+    color: '#10b981',
+    marginBottom: 16,
+  },
+  successText: {
+    fontSize: 18,
+    color: '#111827',
+    textAlign: 'center',
     fontWeight: '500',
   },
 }); 
