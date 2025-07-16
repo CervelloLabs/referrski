@@ -21,7 +21,7 @@ export interface InviteModalProps extends PropsWithChildren<any> {
   onClose: () => void;
   onSuccess?: () => void;
   inviterId: string;
-  inviterName: string;
+  inviterName?: string;
   sendEmail?: boolean;
   successMessage?: string;
   style?: {
@@ -85,7 +85,7 @@ export function InviteModal({
       return;
     }
 
-    if (!fromName.trim()) {
+    if (!fromName?.trim()) {
       setError('Please enter your name');
       return;
     }
@@ -98,13 +98,13 @@ export function InviteModal({
         inviteeIdentifier: inviteeIdentifier.trim(),
         inviterId,
         metadata: {
-          inviterName: fromName.trim()
+          inviterName: fromName?.trim()
         },
         ...(sendEmail && {
           email: {
-            fromName: fromName.trim(),
-            subject: `${fromName.trim()} would like you to join our app!`,
-            content: `Hey there! ${fromName.trim()} thinks you'd love using our app. Join us and discover all the amazing features we have to offer!`
+            fromName: fromName?.trim(),  
+            subject: `${fromName?.trim()} would like you to join our app!`,
+            content: `Hey there! ${fromName?.trim()} thinks you'd love using our app. Join us and discover all the amazing features we have to offer!`
           }
         })
       });
@@ -154,7 +154,7 @@ export function InviteModal({
             style={[styles.input, style.input]}
             placeholder={texts.fromPlaceholder || 'Your name'}
             placeholderTextColor="#9ca3af"
-            value={fromName}
+            value={fromName || ''}
             onChangeText={setFromName}
             autoCapitalize="words"
           />

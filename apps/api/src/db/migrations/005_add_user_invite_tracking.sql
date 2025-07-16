@@ -14,7 +14,7 @@ CREATE POLICY "Users can view their own invite usage"
     FOR SELECT
     USING (auth.uid() = user_id);
 
--- Create function to track invite usage
+-- Create function to track invite created
 CREATE OR REPLACE FUNCTION track_invite_created()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -31,8 +31,30 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Create function to track invite deleted
+CREATE OR REPLACE FUNCTION track_invite_deleted()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Get the user_id from the apps table using the app_id from the deleted invitation
+    UPDATE public.user_invite_usage 
+    SET 
+        total_invites = GREATEST(0, total_invites - 1),
+        updated_at = CURRENT_TIMESTAMP
+    FROM public.apps a
+    WHERE a.id = OLD.app_id 
+    AND public.user_invite_usage.user_id = a.user_id;
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Create trigger to track new invites
 CREATE TRIGGER track_invite_created_trigger
     AFTER INSERT ON public.invitations
     FOR EACH ROW
-    EXECUTE FUNCTION track_invite_created(); 
+    EXECUTE FUNCTION track_invite_created();
+
+-- Create trigger to track deleted invites
+CREATE TRIGGER track_invite_deleted_trigger
+    AFTER DELETE ON public.invitations
+    FOR EACH ROW
+    EXECUTE FUNCTION track_invite_deleted(); 

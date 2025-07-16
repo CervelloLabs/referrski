@@ -1,37 +1,40 @@
-import { NextRequest } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { NextRequest, NextResponse } from 'next/server';
+import { supabaseAdmin } from '@/lib/supabase';
+import { verifyMobileAuth } from '@/middleware/mobileAuth';
 
 export async function DELETE(
-  _: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string; email: string }> }
 ) {
   try {
     const { id, email } = await params;
     
-    // Check if user is authenticated
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    // Use mobile auth verification (same as invite creation endpoint)
+    const isAuthenticated = await verifyMobileAuth(request, id);
 
-    if (authError || !user) {
-      return new Response('Unauthorized', { status: 401 });
+    if (!isAuthenticated) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
-    // Check if user has access to this app
-    const { data: app, error: appError } = await supabase
+    // Get the app details (auth already verified for this app)
+    const { data: app, error: appError } = await supabaseAdmin
       .from('apps')
-      .select('id')
+      .select('*')
       .eq('id', id)
-      .eq('user_id', user.id)
       .single();
 
     if (appError || !app) {
-      return new Response('App not found or access denied', { status: 404 });
+      return NextResponse.json(
+        { success: false, message: 'App not found' },
+        { status: 404 }
+      );
     }
 
     // Delete all invitations for this app and inviter email
-    const { error: deleteError } = await supabase
+    const { error: deleteError } = await supabaseAdmin
       .from('invitations')
       .delete()
       .eq('app_id', id)
@@ -39,12 +42,18 @@ export async function DELETE(
 
     if (deleteError) {
       console.error('Error deleting invitations:', deleteError);
-      return new Response('Failed to delete invitations', { status: 500 });
+      return NextResponse.json(
+        { success: false, message: 'Failed to delete invitations' },
+        { status: 500 }
+      );
     }
 
-    return new Response(null, { status: 204 });
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error in DELETE /api/apps/[id]/inviters/[email]:', error);
-    return new Response('Internal Server Error', { status: 500 });
+    return NextResponse.json(
+      { success: false, message: 'Internal server error' },
+      { status: 500 }
+    );
   }
 } 

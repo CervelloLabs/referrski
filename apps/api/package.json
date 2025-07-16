@@ -7,10 +7,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "fix-invite-usage": "npx tsx src/scripts/fix-invite-usage.ts",
+    "diagnose-invites": "npx tsx src/scripts/diagnose-invite-issue.ts",
+    "test-api": "npx tsx src/scripts/test-invitation-api.ts",
+    "test-bulk": "npx tsx src/scripts/test-bulk-invitations.ts"
   },
   "dependencies": {
     "@daveyplate/next-rate-limit": "^2.0.1",
+    "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.49.4",
     "@types/uuid": "^10.0.0",
@@ -20,7 +25,7 @@
     "resend": "^4.5.1",
     "stripe": "^18.1.0",
     "uuid": "^11.1.0",
-    "zod": "^3.24.3"
+    "zod": "^3.24.4"
   },
   "devDependencies": {
     "@referrski/eslint-config": "workspace:*",
@@ -29,7 +34,9 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^16.0.3",
     "eslint": "^8.0.0",
-    "tailwindcss": "^4"
+    "tailwindcss": "^4",
+    "tsx": "^4.20.3"
   }
 }

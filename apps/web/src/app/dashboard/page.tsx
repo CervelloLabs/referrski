@@ -8,6 +8,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { CreateAppDialog } from '@/components/app/create-app-dialog';
 import { AppCard } from '@/components/app/app-card';
 import { InviteUsage } from '@/components/invite-usage';
+import { InviterManagement } from '@/components/admin/inviter-management';
 import { fetchApi } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 
@@ -69,6 +70,20 @@ export default function DashboardPage() {
 
       <div className="mb-8">
         <InviteUsage />
+      </div>
+
+      <div className="mb-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Inviter Management</CardTitle>
+            <CardDescription>
+              Manage inviter data and handle GDPR compliance requests
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <InviterManagement />
+          </CardContent>
+        </Card>
       </div>
 
       {isLoading ? (

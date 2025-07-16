@@ -44,25 +44,6 @@ export class ReferrSki {
     return response.json();
   }
 
-  public static async deleteInviterData(inviterEmail: string): Promise<{ success: boolean }> {
-    const instance = ReferrSki.getInstance();
-    const response = await fetch(
-      `${instance.apiUrl}/api/apps/${instance.appId}/inviters/${encodeURIComponent(inviterEmail)}`,
-      {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${instance.apiKey}`,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to delete inviter data');
-    }
-
-    return { success: true };
-  }
-
   public static async verifySignup(options: { inviteeIdentifier: string, invitationId?: string }): Promise<{ success: boolean; verified: boolean }> {
     const instance = ReferrSki.getInstance();
     const response = await fetch(`${instance.apiUrl}/api/apps/${instance.appId}/invitations/verify`, {

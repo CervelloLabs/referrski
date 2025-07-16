@@ -10,6 +10,7 @@ import { sendEmail } from '@/lib/email';
 import { verifyAuth } from '@/middleware/auth';
 import { sendWebhook } from '../../../../../lib/webhook';
 import { WebhookPayload } from '../../../../../types/webhook';
+import { PaymentService } from '@/services/payments';
 
 // Maximum number of invites per user (across all apps)
 const INVITE_LIMIT = 10;
@@ -147,11 +148,20 @@ export async function POST(
 
       const currentInvites = inviteUsage?.total_invites || 0;
       
-      if (currentInvites >= INVITE_LIMIT) {
+      // Check if user can invite based on their subscription
+      // Skip payment check if STRIPE_SECRET_KEY is not set (for testing)
+      let canInvite = true;
+      
+      if (process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY !== 'sk_test_placeholder_for_testing') {
+        const paymentService = PaymentService.getInstance();
+        canInvite = await paymentService.canUserInvite(app.user_id, currentInvites);
+      }
+      
+      if (!canInvite) {
         return NextResponse.json(
           { 
             success: false, 
-            message: `Invite limit of ${INVITE_LIMIT} reached. Please upgrade your plan to create more invites.`
+            message: 'You cannot invite people right now, try again later.'
           },
           { status: 403 }
         );
