@@ -60,15 +60,17 @@ function DocsContent() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <h3 className="text-lg font-semibold mb-2">1. Install the package</h3>
+                <h3 className="text-lg font-semibold mb-2">Install the ReferrSki SDK</h3>
                 <pre className="bg-slate-950 text-slate-50 p-4 rounded-lg">
                   npm install @referrski/react-native
                 </pre>
                 <p className="text-sm text-muted-foreground mt-2">
-                  Or if you&apos;re using yarn:
+                  or with yarn/pnpm:
                 </p>
                 <pre className="bg-slate-950 text-slate-50 p-4 rounded-lg mt-2">
                   yarn add @referrski/react-native
+                  # or
+                  pnpm add @referrski/react-native
                 </pre>
               </div>
             </CardContent>
@@ -85,19 +87,24 @@ function DocsContent() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <h3 className="text-lg font-semibold mb-2">Initialize ReferrSki</h3>
+                <h3 className="text-lg font-semibold mb-2">Configure the SDK</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Configure ReferrSki once at your app&apos;s startup (e.g., in App.tsx or index.js):
+                  Initialize ReferrSki once at your app&apos;s startup:
                 </p>
                 <pre className="bg-slate-950 text-slate-50 p-4 rounded-lg">
 {`import { ReferrSki } from '@referrski/react-native';
 
-// Initialize ReferrSki once at app startup
 ReferrSki.configure({
   appId: '${appId || 'your-app-id'}',
-  apiKey: 'your-api-key' // Required for authentication
+  apiKey: 'your-api-key'
 });`}
                 </pre>
+                <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 p-4 rounded-lg mt-4">
+                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                    <strong>Note:</strong> Your API key is the "Auth Header" value from your app settings. 
+                    Make sure to call this configuration before using any other ReferrSki methods.
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -111,67 +118,51 @@ ReferrSki.configure({
                 Learn how to use ReferrSki&apos;s core features
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               <div>
-                <h3 className="text-lg font-semibold mb-2">Creating Invitations</h3>
+                <h3 className="text-lg font-semibold mb-2">1. Send Invitations</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  After configuring ReferrSki, you can send invitations with or without email notifications:
+                  Send referral invitations to friends:
                 </p>
                 <pre className="bg-slate-950 text-slate-50 p-4 rounded-lg">
-{`import { ReferrSki } from '@referrski/react-native';
-
-// Send invitation without email
-async function inviteFriend(friendIdentifier: string) {
-  try {
-    await ReferrSki.sendInvite({
-      inviteeIdentifier: friendIdentifier,
-      inviterId: 'current-user-id',
-      metadata: {
-        inviterName: 'John Doe'
-      }
-    });
-    // Invitation sent successfully
-  } catch (error) {
-    // Handle error
+{`// Simple invitation
+await ReferrSki.sendInvite({
+  inviteeIdentifier: 'friend@example.com',
+  inviterId: 'current-user-id',
+  metadata: {
+    inviterName: 'John Doe'
   }
-}
+});
 
-// Send invitation with email notification
-async function inviteFriendWithEmail(friendEmail: string) {
-  try {
-    await ReferrSki.sendInvite({
-      inviteeIdentifier: friendEmail,
-      inviterId: 'current-user-id',
-      metadata: {
-        inviterName: 'John Doe'
-      },
-      email: {
-        fromName: 'John Doe',
-        subject: 'Join our app!',
-        content: 'Hey there! I think you\\'d love using our app.'
-      }
-    });
-    // Invitation sent with email notification
-  } catch (error) {
-    // Handle error
+// Invitation with email notification
+await ReferrSki.sendInvite({
+  inviteeIdentifier: 'friend@example.com',
+  inviterId: 'current-user-id',
+  metadata: {
+    inviterName: 'John Doe'
+  },
+  email: {
+    fromName: 'John Doe',
+    subject: 'Join our app!',
+    content: 'Hey! I think you\\'d love using our app.'
   }
-}
+});`}
+                </pre>
+              </div>
 
-// Verify an invitation during signup
-async function verifyInvitation(identifier: string) {
-  try {
-    const result = await ReferrSki.verifySignup({
-      inviteeIdentifier: identifier
-    });
-    
-    if (result.verified) {
-      // User has a valid invitation
-    } else {
-      // No valid invitation found
-    }
-  } catch (error) {
-    // Handle error
-  }
+              <div>
+                <h3 className="text-lg font-semibold mb-2">2. Verify Signups</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Check if a user has a valid invitation during signup:
+                </p>
+                <pre className="bg-slate-950 text-slate-50 p-4 rounded-lg">
+{`const result = await ReferrSki.verifySignup({
+  inviteeIdentifier: 'friend@example.com'
+});
+
+if (result.verified) {
+  // User completed a referral - grant bonus!
+  console.log('Valid referral completed');
 }`}
                 </pre>
               </div>
@@ -189,89 +180,42 @@ async function verifyInvitation(identifier: string) {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <h3 className="text-lg font-semibold mb-2">InviteModal</h3>
+                <h3 className="text-lg font-semibold mb-2">InviteModal Component</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  A pre-built modal component for collecting and sending invitations, with optional email notifications:
+                  A ready-to-use modal for collecting and sending invitations:
                 </p>
                 <pre className="bg-slate-950 text-slate-50 p-4 rounded-lg">
 {`import { InviteModal } from '@referrski/react-native';
 
 function MyScreen() {
-  const [visible, setVisible] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   return (
     <>
-      {/* Button to show the modal */}
-      <Button onPress={() => setVisible(true)}>
+      <Button onPress={() => setShowModal(true)}>
         Invite Friends
       </Button>
 
-      {/* Invite Modal */}
       <InviteModal
-        visible={visible}
-        onClose={() => setVisible(false)}
+        visible={showModal}
+        onClose={() => setShowModal(false)}
         inviterId="current-user-id"
         inviterName="John Doe"
-        sendEmail={true} // Optional: set to false to disable email notifications
+        sendEmail={true}
         onSuccess={() => {
-          // Optional: Handle successful invitation
-          console.log('Invitation sent successfully');
-        }}
-        style={{
-          // Optional: Custom styles
-          container: {
-            // Modal card styles
-          },
-          overlay: {
-            // Modal overlay styles
-          },
-          modalCard: {
-            // Modal card container styles
-          },
-          input: {
-            // Input field styles
-          },
-          inputContainer: {
-            // Input container styles
-          },
-          button: {
-            // Submit button styles
-          },
-          buttonText: {
-            // Button text styles
-          },
-          title: {
-            // Title text styles
-          },
-          description: {
-            // Description text styles
-          },
-          error: {
-            // Error message styles
-          },
-          closeButton: {
-            // Close button styles
-          },
-          closeButtonText: {
-            // Close button text styles
-          }
-        }}
-        texts={{
-          // Optional: Custom texts
-          title: 'Invite Your Friends',
-          placeholder: 'Enter friend\\'s email or identifier',
-          button: 'Send Invitation',
-          success: 'Invitation sent!',
-          error: 'Failed to send invitation'
+          console.log('Invitation sent!');
         }}
       />
     </>
   );
 }`}
                 </pre>
-                <p className="text-sm text-muted-foreground mt-4">
-                  Make sure you&apos;ve called <code>ReferrSki.configure()</code> before using the InviteModal component.
-                </p>
+                <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 p-4 rounded-lg mt-4">
+                  <p className="text-sm text-green-800 dark:text-green-200">
+                    <strong>Tip:</strong> The InviteModal handles all the UI and validation for you. 
+                    Just provide the required props and it&apos;s ready to use!
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -285,110 +229,50 @@ function MyScreen() {
                 Detailed reference for all available methods
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-8">
+            <CardContent className="space-y-6">
               <div>
-                <h3 className="text-lg font-semibold mb-2">ReferrSki.configure(config)</h3>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Configures the SDK with your application settings.
-                </p>
-                <div className="bg-slate-100 dark:bg-slate-800 p-4 rounded-lg">
-                  <p className="text-sm font-medium mb-1">Parameters:</p>
-                  <ul className="list-disc pl-5 text-sm space-y-1">
-                    <li><code>config</code>: Object</li>
-                    <li className="ml-5"><code>appId</code>: string - Your ReferrSki application ID</li>
-                    <li className="ml-5"><code>apiKey</code>: string - Your ReferrSki API key</li>
-                  </ul>
+                <h3 className="text-lg font-semibold mb-2">Essential Methods</h3>
+                <div className="space-y-4">
+                  <div className="border border-slate-200 dark:border-slate-700 p-4 rounded-lg">
+                    <h4 className="font-medium mb-2"><code>ReferrSki.configure()</code></h4>
+                    <p className="text-sm text-muted-foreground mb-2">Set up the SDK with your app credentials</p>
+                    <code className="text-xs bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
+                      appId: string, apiKey: string
+                    </code>
+                  </div>
+
+                  <div className="border border-slate-200 dark:border-slate-700 p-4 rounded-lg">
+                    <h4 className="font-medium mb-2"><code>ReferrSki.sendInvite()</code></h4>
+                    <p className="text-sm text-muted-foreground mb-2">Send a referral invitation</p>
+                    <code className="text-xs bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
+                      inviteeIdentifier, inviterId, metadata?, email?
+                    </code>
+                  </div>
+
+                  <div className="border border-slate-200 dark:border-slate-700 p-4 rounded-lg">
+                    <h4 className="font-medium mb-2"><code>ReferrSki.verifySignup()</code></h4>
+                    <p className="text-sm text-muted-foreground mb-2">Check if user has valid invitation during signup</p>
+                    <code className="text-xs bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
+                      inviteeIdentifier → {'{verified: boolean}'}
+                    </code>
+                  </div>
                 </div>
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold mb-2">ReferrSki.sendInvite(options)</h3>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Sends a new invitation, optionally with an email notification.
-                </p>
-                <div className="bg-slate-100 dark:bg-slate-800 p-4 rounded-lg">
-                  <p className="text-sm font-medium mb-1">Parameters:</p>
-                  <ul className="list-disc pl-5 text-sm space-y-1">
-                    <li><code>options</code>: SendInviteOptions</li>
-                    <li className="ml-5"><code>inviteeIdentifier</code>: string - The identifier (e.g., email) of the person to invite</li>
-                    <li className="ml-5"><code>inviterId</code>: string - The identifier of the person sending the invitation</li>
-                    <li className="ml-5"><code>metadata?</code>: object - Optional metadata about the invitation</li>
-                    <li className="ml-5"><code>email?</code>: EmailConfig - Optional email configuration</li>
-                    <li className="ml-10"><code>fromName</code>: string - Name to show in the email</li>
-                    <li className="ml-10"><code>subject</code>: string - Email subject line</li>
-                    <li className="ml-10"><code>content</code>: string - Email content</li>
-                  </ul>
-                  <p className="text-sm font-medium mt-2 mb-1">Returns:</p>
-                  <p className="text-sm"><code>Promise&lt;InvitationResponse&gt;</code></p>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold mb-2">ReferrSki.verifySignup(options)</h3>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Verifies if an invitation exists for the specified identifier during signup.
-                </p>
-                <div className="bg-slate-100 dark:bg-slate-800 p-4 rounded-lg">
-                  <p className="text-sm font-medium mb-1">Parameters:</p>
-                  <ul className="list-disc pl-5 text-sm space-y-1">
-                    <li><code>options</code>: Object</li>
-                    <li className="ml-5"><code>inviteeIdentifier</code>: string - The identifier to verify</li>
-                    <li className="ml-5"><code>invitationId?</code>: string - Optional specific invitation ID to verify</li>
-                  </ul>
-                  <p className="text-sm font-medium mt-2 mb-1">Returns:</p>
-                  <p className="text-sm"><code>Promise&lt;{`{ success: boolean; verified: boolean }`}&gt;</code></p>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold mb-2">ReferrSki.deleteInviterData(inviterEmail)</h3>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Deletes all invitations associated with a specific inviter for the current app.
-                </p>
-                <div className="bg-slate-100 dark:bg-slate-800 p-4 rounded-lg">
-                  <p className="text-sm font-medium mb-1">Parameters:</p>
-                  <ul className="list-disc pl-5 text-sm space-y-1">
-                    <li><code>inviterEmail</code>: string - The email/identifier whose invitations should be deleted</li>
-                  </ul>
-                  <p className="text-sm font-medium mt-2 mb-1">Returns:</p>
-                  <p className="text-sm"><code>Promise&lt;{`{ success: boolean }`}&gt;</code></p>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold mb-2">InviteModal Component</h3>
-                <p className="text-sm text-muted-foreground mb-2">
-                  A pre-built modal component for collecting and sending invitations.
-                </p>
-                <div className="bg-slate-100 dark:bg-slate-800 p-4 rounded-lg">
-                  <p className="text-sm font-medium mb-1">Props:</p>
-                  <ul className="list-disc pl-5 text-sm space-y-1">
-                    <li><code>visible</code>: boolean - Controls the visibility of the modal</li>
-                    <li><code>onClose</code>: () =&gt; void - Callback function when the modal is closed</li>
-                    <li><code>inviterId</code>: string - Identifier of the user sending invitations</li>
-                    <li><code>inviterName</code>: string - Name of the user sending invitations</li>
-                    <li><code>sendEmail?</code>: boolean - Whether to send email notifications (default: true)</li>
-                    <li><code>onSuccess?</code>: () =&gt; void - Optional callback when invitation is sent successfully</li>
-                    <li><code>style?</code>: Object - Optional styles for customizing the modal appearance</li>
-                    <li className="ml-5"><code>container</code>: StyleProp - Modal card styles</li>
-                    <li className="ml-5"><code>overlay</code>: StyleProp - Modal overlay styles</li>
-                    <li className="ml-5"><code>modalCard</code>: StyleProp - Modal card container styles</li>
-                    <li className="ml-5"><code>input</code>: StyleProp - Input field styles</li>
-                    <li className="ml-5"><code>inputContainer</code>: StyleProp - Input container styles</li>
-                    <li className="ml-5"><code>button</code>: StyleProp - Submit button styles</li>
-                    <li className="ml-5"><code>buttonText</code>: StyleProp - Button text styles</li>
-                    <li className="ml-5"><code>title</code>: StyleProp - Title text styles</li>
-                    <li className="ml-5"><code>description</code>: StyleProp - Description text styles</li>
-                    <li className="ml-5"><code>error</code>: StyleProp - Error message styles</li>
-                    <li className="ml-5"><code>closeButton</code>: StyleProp - Close button styles</li>
-                    <li className="ml-5"><code>closeButtonText</code>: StyleProp - Close button text styles</li>
-                    <li><code>texts?</code>: Object - Optional custom texts for the modal</li>
-                    <li className="ml-5"><code>title</code>: string - Modal title</li>
-                    <li className="ml-5"><code>placeholder</code>: string - Input placeholder</li>
-                    <li className="ml-5"><code>button</code>: string - Button text</li>
-                    <li className="ml-5"><code>success</code>: string - Success message</li>
-                    <li className="ml-5"><code>error</code>: string - Error message</li>
-                  </ul>
+                <h3 className="text-lg font-semibold mb-2">InviteModal Props</h3>
+                <div className="border border-slate-200 dark:border-slate-700 p-4 rounded-lg">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                    <div><strong>visible:</strong> boolean</div>
+                    <div><strong>onClose:</strong> function</div>
+                    <div><strong>inviterId:</strong> string</div>
+                    <div><strong>inviterName:</strong> string</div>
+                    <div><strong>sendEmail?:</strong> boolean</div>
+                    <div><strong>onSuccess?:</strong> function</div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-3">
+                    Plus optional <code>style</code> and <code>texts</code> props for customization
+                  </p>
                 </div>
               </div>
             </CardContent>
