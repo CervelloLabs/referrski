@@ -98,7 +98,7 @@ export function AppCard({ app, onUpdate }: AppCardProps) {
 
   return (
     <>
-      <Card className="hover:shadow-lg transition-shadow">
+      <Card className="hover:shadow-lg transition-shadow h-fit">
         <CardHeader>
           <div>
             <CardTitle>{app.name}</CardTitle>
@@ -107,52 +107,47 @@ export function AppCard({ app, onUpdate }: AppCardProps) {
             </CardDescription>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="flex gap-2">
+        <CardContent className="pt-4">
+          <div className="space-y-1">
             <Button
               variant="ghost"
-              size="icon"
               onClick={() => router.push(`/dashboard/docs?appId=${app.id}`)}
-              title="View Documentation"
-              className="h-8 w-8"
+              className="w-full justify-start h-10 px-3 text-left"
             >
-              <Code className="h-4 w-4" />
+              <Code className="h-4 w-4 mr-3 flex-shrink-0" />
+              <span className="text-sm">View Documentation</span>
             </Button>
             <Button
               variant="ghost"
-              size="icon"
               onClick={() => setIsDetailsOpen(true)}
-              title="View Details"
-              className="h-8 w-8"
+              className="w-full justify-start h-10 px-3 text-left"
             >
-              <Info className="h-4 w-4" />
+              <Info className="h-4 w-4 mr-3 flex-shrink-0" />
+              <span className="text-sm">View Details</span>
             </Button>
             <Button
               variant="ghost"
-              size="icon"
               onClick={() => setIsStatsOpen(true)}
-              title="View Statistics"
-              className="h-8 w-8"
+              className="w-full justify-start h-10 px-3 text-left"
             >
-              <BarChart className="h-4 w-4" />
+              <BarChart className="h-4 w-4 mr-3 flex-shrink-0" />
+              <span className="text-sm">View Statistics</span>
             </Button>
             <Button
               variant="ghost"
-              size="icon"
               onClick={() => router.push(`/dashboard/apps/${app.id}/webhooks`)}
-              title="Test Webhooks"
-              className="h-8 w-8"
+              className="w-full justify-start h-10 px-3 text-left"
             >
-              <Webhook className="h-4 w-4" />
+              <Webhook className="h-4 w-4 mr-3 flex-shrink-0" />
+              <span className="text-sm">Test Webhooks</span>
             </Button>
             <Button
               variant="ghost"
-              size="icon"
               onClick={() => setIsSettingsOpen(true)}
-              title="Settings"
-              className="h-8 w-8"
+              className="w-full justify-start h-10 px-3 text-left"
             >
-              <Settings className="h-4 w-4" />
+              <Settings className="h-4 w-4 mr-3 flex-shrink-0" />
+              <span className="text-sm">Settings</span>
             </Button>
           </div>
         </CardContent>
