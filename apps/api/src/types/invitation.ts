@@ -8,6 +8,7 @@ export interface Invitation {
   createdAt: string;
   updatedAt: string;
   completedAt?: string;
+  appName?: string; // Optional app name for display purposes
 }
 
 export interface CreateInvitationRequest {
