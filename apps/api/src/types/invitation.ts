@@ -9,6 +9,8 @@ export interface Invitation {
   updatedAt: string;
   completedAt?: string;
   appName?: string; // Optional app name for display purposes
+  iosAppUrl?: string | null; // Optional iOS app store URL
+  androidAppUrl?: string | null; // Optional Android app store URL
 }
 
 export interface CreateInvitationRequest {

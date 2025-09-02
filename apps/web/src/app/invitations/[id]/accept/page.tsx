@@ -20,6 +20,8 @@ interface Invitation {
   createdAt: string;
   updatedAt: string;
   completedAt?: string;
+  iosAppUrl?: string | null;
+  androidAppUrl?: string | null;
 }
 
 interface InvitationResponse {
@@ -41,6 +43,17 @@ export default function AcceptInvitationPage() {
   const [showAuth, setShowAuth] = useState(false);
 
   const invitationId = params?.id as string;
+
+  // Detect user's platform
+  const getUserPlatform = () => {
+    if (typeof window === 'undefined') return 'unknown';
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    if (/android/.test(userAgent)) return 'android';
+    if (/iphone|ipad|ipod/.test(userAgent)) return 'ios';
+    return 'unknown';
+  };
+
+  const platform = getUserPlatform();
 
   useEffect(() => {
     if (invitationId) {
@@ -101,13 +114,8 @@ export default function AcceptInvitationPage() {
 
       toast({
         title: 'Invitation accepted!',
-        description: 'Thank you for joining. You can now close this page.',
+        description: 'Thank you for joining. Download the app to get started!',
       });
-
-      // Optionally redirect to a success page or close the window
-      setTimeout(() => {
-        router.push('/');
-      }, 2000);
 
     } catch (err) {
       console.error('Error accepting invitation:', err);
@@ -118,6 +126,35 @@ export default function AcceptInvitationPage() {
       });
     } finally {
       setAccepting(false);
+    }
+  };
+
+  const handleDownloadApp = () => {
+    if (!invitation) return;
+
+    let downloadUrl = '';
+    
+    // Prioritize platform-specific URL, fallback to the other one
+    if (platform === 'ios' && invitation.iosAppUrl) {
+      downloadUrl = invitation.iosAppUrl;
+    } else if (platform === 'android' && invitation.androidAppUrl) {
+      downloadUrl = invitation.androidAppUrl;
+    } else if (invitation.iosAppUrl) {
+      downloadUrl = invitation.iosAppUrl;
+    } else if (invitation.androidAppUrl) {
+      downloadUrl = invitation.androidAppUrl;
+    }
+
+    if (downloadUrl) {
+      // Accept the invitation first, then redirect
+      handleAcceptInvitation().then(() => {
+        setTimeout(() => {
+          window.open(downloadUrl, '_blank');
+        }, 500); // Small delay to ensure toast is shown
+      });
+    } else {
+      // No app store URLs configured, just accept the invitation
+      handleAcceptInvitation();
     }
   };
 
@@ -195,27 +232,90 @@ export default function AcceptInvitationPage() {
           )}
 
           <div className="space-y-3">
-            <Button 
-              onClick={handleAcceptInvitation}
-              className="w-full"
-              size="lg"
-              disabled={accepting}
-            >
-              {accepting ? 'Accepting...' : 'Accept Invitation'}
-            </Button>
-            
-            <div className="text-center text-sm text-gray-500">
-              or
-            </div>
-            
-            <AuthDialog
-              trigger={
-                <Button variant="outline" className="w-full" size="lg">
-                  Sign Up & Accept
+            {(invitation.iosAppUrl || invitation.androidAppUrl) ? (
+              <>
+                <Button 
+                  onClick={handleDownloadApp}
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  size="lg"
+                  disabled={accepting}
+                >
+                  {accepting ? 'Processing...' : `Download ${invitation.appName || 'App'}`}
+                  {platform === 'ios' && invitation.iosAppUrl && ' from App Store'}
+                  {platform === 'android' && invitation.androidAppUrl && ' from Google Play'}
                 </Button>
-              }
-              defaultMode="sign-up"
-            />
+                
+                {invitation.iosAppUrl && invitation.androidAppUrl && (
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={() => {
+                        handleAcceptInvitation().then(() => {
+                          setTimeout(() => {
+                            window.open(invitation.iosAppUrl!, '_blank');
+                          }, 500);
+                        });
+                      }}
+                      variant="outline"
+                      className="flex-1"
+                      disabled={accepting}
+                    >
+                      iOS App Store
+                    </Button>
+                    <Button 
+                      onClick={() => {
+                        handleAcceptInvitation().then(() => {
+                          setTimeout(() => {
+                            window.open(invitation.androidAppUrl!, '_blank');
+                          }, 500);
+                        });
+                      }}
+                      variant="outline"
+                      className="flex-1"
+                      disabled={accepting}
+                    >
+                      Google Play
+                    </Button>
+                  </div>
+                )}
+                
+                <div className="text-center text-sm text-gray-500">
+                  or just accept without downloading
+                </div>
+                
+                <Button 
+                  onClick={handleAcceptInvitation}
+                  variant="ghost"
+                  className="w-full"
+                  disabled={accepting}
+                >
+                  Accept Invitation Only
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button 
+                  onClick={handleAcceptInvitation}
+                  className="w-full"
+                  size="lg"
+                  disabled={accepting}
+                >
+                  {accepting ? 'Accepting...' : 'Accept Invitation'}
+                </Button>
+                
+                <div className="text-center text-sm text-gray-500">
+                  or
+                </div>
+                
+                <AuthDialog
+                  trigger={
+                    <Button variant="outline" className="w-full" size="lg">
+                      Sign Up & Accept
+                    </Button>
+                  }
+                  defaultMode="sign-up"
+                />
+              </>
+            )}
           </div>
 
           <div className="text-center text-xs text-gray-400">

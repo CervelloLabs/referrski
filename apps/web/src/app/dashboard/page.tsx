@@ -17,6 +17,8 @@ interface App {
   name: string;
   webhookUrl: string | null;
   authHeader: string | null;
+  iosAppUrl?: string | null;
+  androidAppUrl?: string | null;
   createdAt: string;
   updatedAt: string;
 }

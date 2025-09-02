@@ -114,7 +114,7 @@ export function generateInvitationEmail(data: InvitationEmailData): string {
       <p class="message">${content}</p>
       
       <div class="button-container">
-        <a href="${data.acceptUrl}" class="button">Accept Invitation</a>
+        <a href="${data.acceptUrl}" class="button">Accept Invitation & Download App</a>
       </div>
       
       <p style="text-align: center; color: #718096; font-size: 14px;">

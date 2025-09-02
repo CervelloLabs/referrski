@@ -14,6 +14,8 @@ interface App {
   name: string;
   webhookUrl: string | null;
   authHeader: string | null;
+  iosAppUrl?: string | null;
+  androidAppUrl?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -35,6 +37,8 @@ export function AppCard({ app, onUpdate }: AppCardProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [webhookUrl, setWebhookUrl] = useState(app.webhookUrl || '');
   const [authHeader, setAuthHeader] = useState(app.authHeader || '');
+  const [iosAppUrl, setIosAppUrl] = useState(app.iosAppUrl || '');
+  const [androidAppUrl, setAndroidAppUrl] = useState(app.androidAppUrl || '');
   const [stats, setStats] = useState<AppStats | null>(null);
   const [isLoadingStats, setIsLoadingStats] = useState(false);
   const { toast } = useToast();
@@ -51,6 +55,8 @@ export function AppCard({ app, onUpdate }: AppCardProps) {
           name: app.name,
           webhookUrl: webhookUrl || null,
           authHeader: authHeader || null,
+          iosAppUrl: iosAppUrl || null,
+          androidAppUrl: androidAppUrl || null,
         },
       });
 
@@ -159,7 +165,7 @@ export function AppCard({ app, onUpdate }: AppCardProps) {
           <DialogHeader>
             <DialogTitle>App Settings</DialogTitle>
             <DialogDescription>
-              Configure your app's webhook URL and authentication header.
+              Configure your app's webhook URL, authentication header, and app store URLs for invitation links.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSettingsSave} className="grid gap-4 py-4">
@@ -181,6 +187,28 @@ export function AppCard({ app, onUpdate }: AppCardProps) {
                 placeholder="token123"
                 value={authHeader}
                 onChange={(e) => setAuthHeader(e.target.value)}
+                disabled={isLoading}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="iosAppUrl">iOS App Store URL</Label>
+              <Input
+                id="iosAppUrl"
+                type="url"
+                placeholder="https://apps.apple.com/app/your-app/id123456789"
+                value={iosAppUrl}
+                onChange={(e) => setIosAppUrl(e.target.value)}
+                disabled={isLoading}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="androidAppUrl">Android App Store URL</Label>
+              <Input
+                id="androidAppUrl"
+                type="url"
+                placeholder="https://play.google.com/store/apps/details?id=com.yourapp"
+                value={androidAppUrl}
+                onChange={(e) => setAndroidAppUrl(e.target.value)}
                 disabled={isLoading}
               />
             </div>

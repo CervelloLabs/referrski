@@ -11,6 +11,14 @@ export const appSchema = z.object({
   emailFromName: z.string().optional(),
   emailSubjectTemplate: z.string().optional(),
   emailTemplate: z.string().optional(),
+  iosAppUrl: z.preprocess(
+    (val) => val === null || val === '' ? undefined : val,
+    z.string().url('Must be a valid URL').optional()
+  ),
+  androidAppUrl: z.preprocess(
+    (val) => val === null || val === '' ? undefined : val,
+    z.string().url('Must be a valid URL').optional()
+  ),
 });
 
 export type AppInput = z.infer<typeof appSchema>; 

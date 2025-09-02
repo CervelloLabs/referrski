@@ -6,7 +6,7 @@ import { appSchema } from '@/schemas/app';
 import type { AppResponse } from '@/types/app';
 import { ZodError } from 'zod';
 
-// Get app details
+  // Get app details
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -49,6 +49,8 @@ export async function GET(
             userId: app.user_id,
             createdAt: app.created_at,
             updatedAt: app.updated_at,
+            iosAppUrl: app.ios_app_url,
+            androidAppUrl: app.android_app_url,
           },
         },
       },
@@ -106,6 +108,8 @@ export async function PUT(
         name: validatedData.name,
         webhook_url: validatedData.webhookUrl,
         auth_header: validatedData.authHeader,
+        ios_app_url: validatedData.iosAppUrl,
+        android_app_url: validatedData.androidAppUrl,
       })
       .eq('id', id)
       .select()
@@ -128,6 +132,8 @@ export async function PUT(
             userId: app.user_id,
             createdAt: app.created_at,
             updatedAt: app.updated_at,
+            iosAppUrl: app.ios_app_url,
+            androidAppUrl: app.android_app_url,
           },
         },
       },

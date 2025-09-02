@@ -40,6 +40,8 @@ export async function GET(request: Request) {
             userId: app.user_id,
             createdAt: app.created_at,
             updatedAt: app.updated_at,
+            iosAppUrl: app.ios_app_url,
+            androidAppUrl: app.android_app_url,
           })),
         },
       },
@@ -83,6 +85,8 @@ export async function POST(request: Request) {
         name: validatedData.name,
         webhook_url: validatedData.webhookUrl,
         auth_header: validatedData.authHeader,
+        ios_app_url: validatedData.iosAppUrl,
+        android_app_url: validatedData.androidAppUrl,
         user_id: authResult.user.id,
       })
       .select()
@@ -111,6 +115,8 @@ export async function POST(request: Request) {
             userId: app.user_id,
             createdAt: app.created_at,
             updatedAt: app.updated_at,
+            iosAppUrl: app.ios_app_url,
+            androidAppUrl: app.android_app_url,
           },
         },
       },

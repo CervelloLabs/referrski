@@ -19,7 +19,9 @@ export async function GET(
         apps:app_id (
           id,
           name,
-          user_id
+          user_id,
+          ios_app_url,
+          android_app_url
         )
       `)
       .eq('id', id)
@@ -51,9 +53,11 @@ export async function GET(
             createdAt: invitation.created_at,
             updatedAt: invitation.updated_at,
             completedAt: invitation.completed_at,
-            // Include app name for display
-            appName: invitation.apps?.name || 'Unknown App'
-          } as any // Extend the type to include appName
+            // Include app details for display
+            appName: invitation.apps?.name || 'Unknown App',
+            iosAppUrl: invitation.apps?.ios_app_url,
+            androidAppUrl: invitation.apps?.android_app_url
+          } as any // Extend the type to include app details
         }
       },
       { status: 200 }

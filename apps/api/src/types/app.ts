@@ -6,6 +6,8 @@ export interface App {
   userId: string;
   createdAt: string;
   updatedAt: string;
+  iosAppUrl?: string | null;
+  androidAppUrl?: string | null;
 }
 
 export interface AppResponse {
