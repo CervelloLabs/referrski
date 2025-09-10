@@ -70,22 +70,24 @@ try {
 }
 ```
 
-### Verifying Signups
+### Validating User Signups
 
-To verify if an identifier has a valid invitation during signup:
+After a user completes the signup process, validate that they had an invitation:
 
 ```typescript
 try {
-  const result = await ReferrSki.verifySignup({
+  const result = await ReferrSki.validateSignup({
     inviteeIdentifier: 'friend@example.com',
+    userId: 'user-123', // Your app's user ID
     // Optional: provide specific invitation ID if known
     // invitationId: 'invitation-id'
   });
   
-  if (result.verified) {
-    // User has a valid invitation
+  if (result.validated) {
+    // User signup was validated against an invitation
+    // This will be tracked in your metrics
   } else {
-    // No valid invitation found
+    // No matching invitation found for this signup
   }
 } catch (error) {
   // Handle error
@@ -194,16 +196,17 @@ Parameters:
 
 Returns: Promise<InvitationResponse>
 
-### ReferrSki.verifySignup(options)
+### ReferrSki.validateSignup(options)
 
-Verifies if an invitation exists for the specified identifier during signup.
+Validates and records that a user has completed signup after accepting an invitation.
 
 Parameters:
-- `options`: Object
-  - `inviteeIdentifier`: string - The identifier to verify
-  - `invitationId?`: string - Optional specific invitation ID to verify
+- `options`: ValidateSignupOptions
+  - `inviteeIdentifier`: string - The identifier of the user who signed up
+  - `userId`: string - The unique user ID from your app's authentication system
+  - `invitationId?`: string - Optional specific invitation ID to validate
 
-Returns: Promise<{ success: boolean; verified: boolean }>
+Returns: Promise<ValidateSignupResponse>
 
 ### ReferrSki.deleteInviterData(inviterEmail)
 

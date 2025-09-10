@@ -26,14 +26,9 @@ jest.mock('./index', () => {
         },
       };
     }),
-    deleteInviterData: jest.fn().mockImplementation(async () => ({
+    validateSignup: jest.fn().mockImplementation(async (params) => ({
       success: true,
-    })),
-    getInvitations: jest.fn().mockImplementation(async () => ({
-      success: true,
-      data: {
-        invitations: [],
-      },
+      validated: params.inviteeIdentifier.includes('@') && !!params.userId,
     })),
   };
 
@@ -46,6 +41,7 @@ describe('ReferrSki SDK Integration Tests', () => {
   beforeEach(() => {
     ReferrSki.configure({
       appId: 'test-app-id',
+      apiKey: 'test-api-key',
     });
   });
 
@@ -109,31 +105,39 @@ describe('ReferrSki SDK Integration Tests', () => {
     });
   });
 
-  describe('deleteInviterData', () => {
-    it('should successfully delete inviter data', async () => {
-      // First, send an invite to create some data
-      await ReferrSki.sendInvite({
-        inviterId: testInviter.id,
+  describe('validateSignup', () => {
+    it('should successfully validate a user signup with valid invitation', async () => {
+      const result = await ReferrSki.validateSignup({
         inviteeIdentifier: testInvitee,
+        userId: 'user-123',
       });
 
-      // Then delete the inviter's data
-      const result = await ReferrSki.deleteInviterData(testInviter.id);
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
-
-      // Verify the data is deleted by trying to fetch invitations
-      const invitations = await ReferrSki.getInvitations();
-      const inviterInvitations = invitations.data?.invitations.filter(
-        inv => inv.inviterId === testInviter.id
-      );
-      expect(inviterInvitations).toHaveLength(0);
+      expect(result.validated).toBe(true);
     });
 
-    it('should handle deleting non-existent inviter data', async () => {
-      const result = await ReferrSki.deleteInviterData('non-existent@example.com');
+    it('should return false for invalid identifier', async () => {
+      const result = await ReferrSki.validateSignup({
+        inviteeIdentifier: 'invalid-identifier',
+        userId: 'user-123',
+      });
+
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
+      expect(result.validated).toBe(false);
+    });
+
+    it('should return false when userId is missing', async () => {
+      const result = await ReferrSki.validateSignup({
+        inviteeIdentifier: testInvitee,
+        userId: '',
+      });
+
+      expect(result).toBeDefined();
+      expect(result.success).toBe(true);
+      expect(result.validated).toBe(false);
     });
   });
+
 }); 

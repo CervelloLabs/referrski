@@ -1,29 +1,33 @@
-import { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { verifyMobileAuth } from '@/middleware/mobileAuth';
-import { verifyInvitationSchema } from '@/schemas/invitation';
-import type { InvitationResponse } from '@/types/invitation';
-import { ZodError } from 'zod';
-import { sendWebhook } from '../../../../../../lib/webhook';
-import { WebhookPayload } from '../../../../../../types/webhook';
+import { z } from 'zod';
+import { sendWebhook } from '@/lib/webhook';
+import { WebhookPayload } from '@/types/webhook';
+
+const validateSignupSchema = z.object({
+  inviteeIdentifier: z.string().min(1),
+  userId: z.string().min(1),
+  invitationId: z.string().uuid().optional(),
+});
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-  const isAuthenticated = await verifyMobileAuth(request, id);
-
-  if (!isAuthenticated) {
-    return NextResponse.json(
-      { success: false, message: "Unauthorized" },
-      { status: 401 }
-    );
-  }
-
   try {
-    // Get the app details directly since we've already verified auth
+    const { id } = await params;
+    
+    // Verify authentication
+    const isAuthenticated = await verifyMobileAuth(request, id);
+    if (!isAuthenticated) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    // Get the app details
     const { data: app, error: appError } = await supabaseAdmin
       .from('apps')
       .select('*')
@@ -38,15 +42,16 @@ export async function POST(
     }
 
     const body = await request.json();
-    const validatedData = verifyInvitationSchema.parse(body);
+    const validatedData = validateSignupSchema.parse(body);
 
-    // Find the invitation
+    // Find the invitation that was completed (accepted)
     let invitationQuery = supabaseAdmin
       .from('invitations')
       .select('*')
       .eq('app_id', id)
       .eq('invitee_identifier', validatedData.inviteeIdentifier)
-      .eq('status', 'pending');
+      .eq('status', 'completed') // Only look for completed invitations
+      .is('signed_up_at', null); // Not already marked as signed up
 
     if (validatedData.invitationId) {
       invitationQuery = invitationQuery.eq('id', validatedData.invitationId);
@@ -56,18 +61,22 @@ export async function POST(
 
     if (fetchError || !invitation) {
       return NextResponse.json(
-        { success: false, message: 'No valid invitation found' },
-        { status: 404 }
+        { 
+          success: true, 
+          validated: false, 
+          message: 'No matching completed invitation found for this user' 
+        },
+        { status: 200 }
       );
     }
 
-    // Complete the invitation
+    // Update the invitation to mark that the user has signed up
     const now = new Date().toISOString();
     const { data: updatedInvitation, error: updateError } = await supabaseAdmin
       .from('invitations')
       .update({
-        status: 'completed',
-        completed_at: now,
+        signed_up_at: now,
+        signed_up_user_id: validatedData.userId,
       })
       .eq('id', invitation.id)
       .select()
@@ -82,49 +91,41 @@ export async function POST(
     if (app.webhook_url) {
       try {
         const webhookPayload: WebhookPayload = {
-          type: 'invitation.completed',
+          type: 'invitation.signup_completed',
           data: {
             invitationId: updatedInvitation.id,
             appId: updatedInvitation.app_id,
             inviterId: updatedInvitation.inviter_id,
             inviteeIdentifier: updatedInvitation.invitee_identifier,
-            status: updatedInvitation.status,
-            metadata: updatedInvitation.metadata,
+            status: 'completed',
+            metadata: updatedInvitation.metadata || {},
             createdAt: updatedInvitation.created_at,
             completedAt: updatedInvitation.completed_at,
+            signedUpAt: updatedInvitation.signed_up_at,
+            signedUpUserId: updatedInvitation.signed_up_user_id,
           },
         };
-        
+
         await sendWebhook(app.webhook_url, app.auth_header, webhookPayload);
       } catch (webhookError) {
-        console.error('Webhook notification failed:', webhookError);
+        console.error('Webhook error:', webhookError);
         // Don't fail the request if webhook fails
       }
     }
 
-    return NextResponse.json<InvitationResponse>(
-      {
-        success: true,
-        data: {
-          invitation: {
-            id: updatedInvitation.id,
-            appId: updatedInvitation.app_id,
-            inviterId: updatedInvitation.inviter_id,
-            inviteeIdentifier: updatedInvitation.invitee_identifier,
-            status: updatedInvitation.status,
-            metadata: updatedInvitation.metadata,
-            createdAt: updatedInvitation.created_at,
-            updatedAt: updatedInvitation.updated_at,
-            completedAt: updatedInvitation.completed_at,
-          },
-        },
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error('Error verifying invitation:', error);
+    return NextResponse.json({
+      success: true,
+      validated: true,
+      message: 'User signup validated successfully',
+      data: {
+        invitation: updatedInvitation
+      }
+    });
 
-    if (error instanceof ZodError) {
+  } catch (error) {
+    console.error('Validate signup error:', error);
+
+    if (error instanceof z.ZodError) {
       return NextResponse.json(
         {
           success: false,
@@ -139,12 +140,11 @@ export async function POST(
     }
 
     return NextResponse.json(
-      { 
-        success: false, 
-        message: error instanceof Error ? error.message : 'Failed to verify invitation',
-        details: error instanceof Error ? error.stack : String(error)
+      {
+        success: false,
+        message: 'Internal server error',
       },
       { status: 500 }
     );
   }
-} 
+}

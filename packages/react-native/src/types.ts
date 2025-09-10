@@ -38,4 +38,16 @@ export interface EmailConfig {
   fromName: string;
   subject: string;
   content: string;
+}
+
+export interface ValidateSignupOptions {
+  inviteeIdentifier: string;
+  userId: string;
+  invitationId?: string;
+}
+
+export interface ValidateSignupResponse {
+  success: boolean;
+  validated: boolean;
+  message?: string;
 } 

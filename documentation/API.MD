@@ -328,8 +328,8 @@ Create a new invitation for an app.
 }
 ```
 
-#### POST `/api/apps/{id}/invitations/verify`
-Mark an invitation as completed (user signed up).
+#### POST `/api/apps/{id}/invitations/validate-signup`
+Validate and record that a user has completed signup after accepting an invitation.
 
 **Authentication:** Uses mobile auth verification (API key or token in headers)
 
@@ -337,7 +337,8 @@ Mark an invitation as completed (user signed up).
 ```json
 {
   "inviteeIdentifier": "invitee@example.com",
-  "invitationId": "invitation-uuid"
+  "userId": "user-123",
+  "invitationId": "invitation-uuid"  // optional
 }
 ```
 
@@ -345,6 +346,8 @@ Mark an invitation as completed (user signed up).
 ```json
 {
   "success": true,
+  "validated": true,
+  "message": "User signup validated successfully",
   "data": {
     "invitation": {
       "id": "invitation-uuid",
@@ -355,8 +358,59 @@ Mark an invitation as completed (user signed up).
       "metadata": {},
       "createdAt": "2024-01-01T00:00:00.000Z",
       "updatedAt": "2024-01-01T12:00:00.000Z",
-      "completedAt": "2024-01-01T12:00:00.000Z"
+      "completedAt": "2024-01-01T12:00:00.000Z",
+      "signedUpAt": "2024-01-01T12:30:00.000Z",
+      "signedUpUserId": "user-123"
     }
+  }
+}
+```
+
+#### GET `/api/apps/{id}/metrics`
+Get invitation funnel metrics for an app.
+
+**Authentication:** Uses web auth verification (requires user to own the app)
+
+**Query Parameters:**
+- `period` (optional): Number of days for period-specific metrics (default: 30)
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "app": {
+      "id": "app-uuid",
+      "name": "My App"
+    },
+    "overall": {
+      "total_invitations": 1000,
+      "invitations_accepted": 650,
+      "invitations_signed_up": 420,
+      "acceptance_rate": 65.00,
+      "signup_rate": 64.62,
+      "conversion_rate": 42.00
+    },
+    "period": {
+      "days": 30,
+      "total_invitations": 100,
+      "invitations_accepted": 68,
+      "invitations_signed_up": 45,
+      "acceptance_rate": 68.00,
+      "signup_rate": 66.18,
+      "conversion_rate": 45.00
+    },
+    "daily_breakdown": [
+      {
+        "date": "2024-01-01",
+        "total_invitations": 5,
+        "invitations_accepted": 3,
+        "invitations_signed_up": 2,
+        "acceptance_rate": 60.00,
+        "signup_rate": 66.67,
+        "conversion_rate": 40.00
+      }
+    ]
   }
 }
 ```
@@ -548,7 +602,7 @@ Some endpoints have rate limiting:
 
 For mobile app integration, use:
 1. Create invitations via `POST /api/apps/{id}/invitations` with mobile auth
-2. Verify invitations via `POST /api/apps/{id}/invitations/verify` with mobile auth
+2. Validate user signups via `POST /api/apps/{id}/invitations/validate-signup` with mobile auth
 3. Listen for webhook events on your server to track referral completions
 
 The mobile auth verification requires proper API keys or tokens configured for your app.

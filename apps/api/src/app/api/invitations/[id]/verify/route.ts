@@ -76,8 +76,8 @@ export async function POST(
 
         await sendWebhook(
           invitation.apps.webhook_url,
-          webhookPayload,
-          invitation.apps.auth_header
+          invitation.apps.auth_header,
+          webhookPayload
         );
       } catch (webhookError) {
         console.error('Webhook delivery failed:', webhookError);

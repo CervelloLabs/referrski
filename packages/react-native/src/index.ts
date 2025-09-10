@@ -1,4 +1,4 @@
-import type { SendInviteOptions, InvitationResponse } from './types';
+import type { SendInviteOptions, InvitationResponse, ValidateSignupOptions, ValidateSignupResponse } from './types';
 
 export class ReferrSki {
   private static instance: ReferrSki | null = null;
@@ -44,9 +44,9 @@ export class ReferrSki {
     return response.json();
   }
 
-  public static async verifySignup(options: { inviteeIdentifier: string, invitationId?: string }): Promise<{ success: boolean; verified: boolean }> {
+  public static async validateSignup(options: ValidateSignupOptions): Promise<ValidateSignupResponse> {
     const instance = ReferrSki.getInstance();
-    const response = await fetch(`${instance.apiUrl}/api/apps/${instance.appId}/invitations/verify`, {
+    const response = await fetch(`${instance.apiUrl}/api/apps/${instance.appId}/invitations/validate-signup`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -56,7 +56,7 @@ export class ReferrSki {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to verify signup');
+      throw new Error('Failed to validate signup');
     }
 
     return response.json();
