@@ -77,10 +77,7 @@ After a user completes the signup process, validate that they had an invitation:
 ```typescript
 try {
   const result = await ReferrSki.validateSignup({
-    inviteeIdentifier: 'friend@example.com',
-    userId: 'user-123', // Your app's user ID
-    // Optional: provide specific invitation ID if known
-    // invitationId: 'invitation-id'
+    userThatSignedUpId: 'user-123', // The same identifier used when creating the invitation
   });
   
   if (result.validated) {
@@ -202,9 +199,7 @@ Validates and records that a user has completed signup after accepting an invita
 
 Parameters:
 - `options`: ValidateSignupOptions
-  - `inviteeIdentifier`: string - The identifier of the user who signed up
-  - `userId`: string - The unique user ID from your app's authentication system
-  - `invitationId?`: string - Optional specific invitation ID to validate
+  - `userThatSignedUpId`: string - The same identifier that was used as `inviteeIdentifier` when creating the invitation
 
 Returns: Promise<ValidateSignupResponse>
 

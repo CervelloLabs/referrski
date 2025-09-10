@@ -41,9 +41,7 @@ export interface EmailConfig {
 }
 
 export interface ValidateSignupOptions {
-  inviteeIdentifier: string;
-  userId: string;
-  invitationId?: string;
+  userThatSignedUpId: string;
 }
 
 export interface ValidateSignupResponse {

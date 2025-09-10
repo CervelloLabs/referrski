@@ -336,9 +336,7 @@ Validate and record that a user has completed signup after accepting an invitati
 **Request Body:**
 ```json
 {
-  "inviteeIdentifier": "invitee@example.com",
-  "userId": "user-123",
-  "invitationId": "invitation-uuid"  // optional
+  "userThatSignedUpId": "user-123"
 }
 ```
 

@@ -28,7 +28,7 @@ jest.mock('./index', () => {
     }),
     validateSignup: jest.fn().mockImplementation(async (params) => ({
       success: true,
-      validated: params.inviteeIdentifier.includes('@') && !!params.userId,
+      validated: !!params.userThatSignedUpId,
     })),
   };
 
@@ -108,8 +108,7 @@ describe('ReferrSki SDK Integration Tests', () => {
   describe('validateSignup', () => {
     it('should successfully validate a user signup with valid invitation', async () => {
       const result = await ReferrSki.validateSignup({
-        inviteeIdentifier: testInvitee,
-        userId: 'user-123',
+        userThatSignedUpId: testInvitee,
       });
 
       expect(result).toBeDefined();
@@ -117,21 +116,19 @@ describe('ReferrSki SDK Integration Tests', () => {
       expect(result.validated).toBe(true);
     });
 
-    it('should return false for invalid identifier', async () => {
+    it('should validate signup with different user identifier', async () => {
       const result = await ReferrSki.validateSignup({
-        inviteeIdentifier: 'invalid-identifier',
-        userId: 'user-123',
+        userThatSignedUpId: 'user-123',
       });
 
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
-      expect(result.validated).toBe(false);
+      expect(result.validated).toBe(true);
     });
 
-    it('should return false when userId is missing', async () => {
+    it('should return false when user ID is missing', async () => {
       const result = await ReferrSki.validateSignup({
-        inviteeIdentifier: testInvitee,
-        userId: '',
+        userThatSignedUpId: '',
       });
 
       expect(result).toBeDefined();

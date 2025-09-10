@@ -6,9 +6,7 @@ import { sendWebhook } from '@/lib/webhook';
 import { WebhookPayload } from '@/types/webhook';
 
 const validateSignupSchema = z.object({
-  inviteeIdentifier: z.string().min(1),
-  userId: z.string().min(1),
-  invitationId: z.string().uuid().optional(),
+  userThatSignedUpId: z.string().min(1),
 });
 
 export async function POST(
@@ -44,27 +42,22 @@ export async function POST(
     const body = await request.json();
     const validatedData = validateSignupSchema.parse(body);
 
-    // Find the invitation that was completed (accepted)
-    let invitationQuery = supabaseAdmin
+    // Find the completed invitation that matches the user identifier
+    const { data: invitation, error: fetchError } = await supabaseAdmin
       .from('invitations')
       .select('*')
       .eq('app_id', id)
-      .eq('invitee_identifier', validatedData.inviteeIdentifier)
+      .eq('invitee_identifier', validatedData.userThatSignedUpId) // Match by user identifier
       .eq('status', 'completed') // Only look for completed invitations
-      .is('signed_up_at', null); // Not already marked as signed up
-
-    if (validatedData.invitationId) {
-      invitationQuery = invitationQuery.eq('id', validatedData.invitationId);
-    }
-
-    const { data: invitation, error: fetchError } = await invitationQuery.single();
+      .is('signed_up_at', null) // Not already marked as signed up
+      .single();
 
     if (fetchError || !invitation) {
       return NextResponse.json(
         { 
           success: true, 
           validated: false, 
-          message: 'No matching completed invitation found for this user' 
+          message: 'No matching completed invitation found for this user identifier'
         },
         { status: 200 }
       );
@@ -76,7 +69,7 @@ export async function POST(
       .from('invitations')
       .update({
         signed_up_at: now,
-        signed_up_user_id: validatedData.userId,
+        signed_up_user_id: validatedData.userThatSignedUpId,
       })
       .eq('id', invitation.id)
       .select()
