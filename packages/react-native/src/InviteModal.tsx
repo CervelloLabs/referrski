@@ -264,19 +264,21 @@ export function InviteModal({
     }
 
     return (
-      <>
+      <View style={styles.contentContainer}>
         <Text style={[styles.title, style.title]}>
           {texts.title || 'Invite Friends'}
         </Text>
         <Text style={[styles.description, style.description]}>
           {texts.description || 'Share this app with your friends and family'}
         </Text>
+        
+        <View style={styles.formContainer}>
         <View style={[styles.inputContainer, style.inputContainer]}>
           <TextInput
             ref={nameInputRef}
             style={[styles.input, style.fromInput || style.input]}
             placeholder={texts.fromPlaceholder || 'Your name'}
-            placeholderTextColor="#9ca3af"
+            placeholderTextColor="#a1a1aa"
             value={fromName}
             onChangeText={(text) => {
               setFromName(text);
@@ -299,7 +301,7 @@ export function InviteModal({
             ref={emailInputRef}
             style={[styles.input, style.input]}
             placeholder={texts.placeholder || 'Enter friend\'s email'}
-            placeholderTextColor="#9ca3af"
+            placeholderTextColor="#a1a1aa"
             value={inviteeIdentifier}
             onChangeText={(text) => {
               setInviteeIdentifier(text);
@@ -338,7 +340,7 @@ export function InviteModal({
         >
           {isLoading ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator color="#fff" size="small" style={styles.loadingSpinner} />
+              <ActivityIndicator color="#fafafa" size="small" style={styles.loadingSpinner} />
               <Text style={[styles.buttonText, style.buttonText, styles.loadingText]}>
                 {texts.loadingText || 'Sending...'}
               </Text>
@@ -349,7 +351,8 @@ export function InviteModal({
             </Text>
           )}
         </TouchableOpacity>
-      </>
+        </View>
+      </View>
     );
   };
 
@@ -412,90 +415,108 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    padding: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.80)',
+    padding: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   scrollContainer: {
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    minHeight: '100%',
+    width: '100%',
   },
   modalCard: {
     width: '100%',
-    maxWidth: 400,
-    minWidth: 280,
+    maxWidth: 420,
     backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 24,
-    marginVertical: 20,
+    borderRadius: 12,
+    padding: 0,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 20 },
+        shadowOpacity: 0.25,
+        shadowRadius: 25,
       },
       android: {
-        elevation: 8,
+        elevation: 24,
       },
     }),
   },
+  contentContainer: {
+    padding: 24,
+  },
+  formContainer: {
+    width: '100%',
+  },
   title: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: '600',
     marginBottom: 8,
-    color: '#111827',
+    color: '#0f0f0f',
     textAlign: 'center',
     lineHeight: 32,
+    letterSpacing: -0.5,
   },
   description: {
-    fontSize: 15,
+    fontSize: 14,
     color: '#6b7280',
-    marginBottom: 24,
+    marginBottom: 32,
     textAlign: 'center',
     lineHeight: 20,
+    paddingHorizontal: 4,
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: 16,
     width: '100%',
   },
   input: {
     width: '100%',
-    padding: Platform.OS === 'ios' ? 16 : 14,
-    backgroundColor: '#f9fafb',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 12,
-    fontSize: 16,
-    color: '#111827',
+    height: 44,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: '#ffffff',
+    borderWidth: 1.5,
+    borderColor: '#e4e4e7',
+    borderRadius: 6,
+    fontSize: 14,
+    color: '#0f0f0f',
     fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
-    textAlignVertical: 'center',
-    minHeight: 48,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 1,
+      },
+    }),
   },
   button: {
     width: '100%',
-    padding: 16,
-    backgroundColor: '#6366f1',
-    borderRadius: 12,
+    height: 44,
+    backgroundColor: '#0f0f0f',
+    borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 8,
-    minHeight: 52,
     ...Platform.select({
       ios: {
-        shadowColor: '#6366f1',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
       },
       android: {
-        elevation: 2,
+        elevation: 1,
       },
     }),
   },
   buttonDisabled: {
-    backgroundColor: '#a5b4fc',
+    backgroundColor: '#a1a1aa',
     ...Platform.select({
       ios: {
         shadowOpacity: 0,
@@ -506,10 +527,11 @@ const styles = StyleSheet.create({
     }),
   },
   buttonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
+    color: '#fafafa',
+    fontSize: 14,
+    fontWeight: '500',
     textAlign: 'center',
+    letterSpacing: 0.25,
   },
   loadingContainer: {
     flexDirection: 'row',
@@ -520,19 +542,26 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   loadingText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
+    color: '#fafafa',
+    fontSize: 14,
+    fontWeight: '500',
   },
   errorContainer: {
     marginBottom: 16,
-    paddingHorizontal: 4,
+    paddingHorizontal: 0,
+    paddingVertical: 12,
+    backgroundColor: '#fef2f2',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#fecaca',
   },
   error: {
-    color: '#ef4444',
-    fontSize: 14,
-    lineHeight: 20,
-    textAlign: 'left',
+    color: '#dc2626',
+    fontSize: 13,
+    lineHeight: 18,
+    textAlign: 'center',
+    paddingHorizontal: 12,
+    fontWeight: '500',
   },
   closeButton: {
     position: 'absolute',
@@ -543,32 +572,34 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
-    borderRadius: 16,
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+    borderRadius: 6,
+    backgroundColor: '#f4f4f5',
+    borderWidth: 1,
+    borderColor: '#e4e4e7',
   },
   closeButtonText: {
-    fontSize: 18,
-    color: '#6b7280',
-    fontWeight: '600',
-    lineHeight: 18,
+    fontSize: 16,
+    color: '#71717a',
+    fontWeight: '500',
+    lineHeight: 16,
   },
   successContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 40,
-    paddingHorizontal: 20,
+    paddingVertical: 48,
+    paddingHorizontal: 24,
   },
   successIcon: {
-    fontSize: 64,
-    color: '#10b981',
-    marginBottom: 20,
+    fontSize: 48,
+    color: '#16a34a',
+    marginBottom: 16,
     fontWeight: 'bold',
   },
   successText: {
-    fontSize: 18,
-    color: '#111827',
+    fontSize: 16,
+    color: '#0f0f0f',
     textAlign: 'center',
-    fontWeight: '600',
+    fontWeight: '500',
     lineHeight: 24,
   },
 }); 
